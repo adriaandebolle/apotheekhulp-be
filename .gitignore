@@ -5,22 +5,23 @@
 
 # Node.js
 node_modules/
-.npm
-.pnp
-.pnp.js
-.yarn/install-state.gz
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # Next.js
-.next/
-out/
-build/
-dist/
+/.next/
+/out/
+/build
 *.tsbuildinfo
 next-env.d.ts
 
 # Environment variables
-.env
-.env.*
+.env*
 !.env.example
 !.env.local.example
 
@@ -32,7 +33,9 @@ supabase/.temp/
 .amplify/
 amplify/
 amplifytools/
-#current-cloud-backend/
+
+# Claude Code local config
+.claude/
 
 # IDEs
 .vscode/
@@ -43,13 +46,17 @@ amplifytools/
 *~
 
 # Testing
-coverage/
-.coverage
+/coverage
 playwright-report/
 test-results/
 
 # Misc
+*.pem
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 *.bak
 *.tmp
 Thumbs.db

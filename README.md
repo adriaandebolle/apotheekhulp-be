@@ -10,7 +10,8 @@ Platform voor het beheren van interim-apotheekassistenten in België. Admins pla
 
 | Laag | Technologie |
 |------|-------------|
-| Frontend | Next.js (App Router) |
+| Frontend | Next.js 16 (App Router, React 19, TypeScript) |
+| Styling | Tailwind CSS 4 |
 | Database & Auth | Supabase (PostgreSQL + Row Level Security) |
 | Hosting | AWS Amplify |
 | PDF generatie | Server-side (fase 8) |
@@ -32,15 +33,28 @@ Platform voor het beheren van interim-apotheekassistenten in België. Admins pla
 
 ```
 apotheekhulp/
+├── src/
+│   └── app/                  # Next.js App Router
+│       ├── layout.tsx
+│       ├── page.tsx
+│       └── globals.css
+├── supabase/
+│   ├── config.toml
+│   └── migrations/           # DB migraties (aangemaakt in fase 3)
+├── public/                   # Statische assets
 ├── docs/
 │   ├── spec/
-│   │   ├── product-spec.md       # volledig functionele spec (audit mei 2026)
-│   │   ├── wbs-estimate.md       # WBS + urenraming (v2.3)
-│   │   └── styling-guide.md      # design tokens (in opbouw)
-│   ├── as-is/                    # screenshots bestaand platform
-│   └── legal/                    # NDA + vertrouwelijkheidsovereenkomst
-├── src/                          # Next.js applicatie (aangemaakt in fase 1)
-└── supabase/                     # migrations + edge functions (aangemaakt in fase 1)
+│   │   ├── product-spec.md   # Volledig functionele spec (audit mei 2026)
+│   │   ├── wbs-estimate.md   # WBS + urenraming (v2.3)
+│   │   └── styling-guide.md  # Design tokens
+│   ├── as-is/                # Screenshots bestaand platform
+│   └── legal/                # NDA + vertrouwelijkheidsovereenkomst
+├── .env.local.example        # Voorbeeld omgevingsvariabelen
+├── .env.local                # Lokale secrets (niet in git)
+├── package.json
+├── next.config.ts
+├── tsconfig.json
+└── tailwind.config.ts        # Aangemaakt in fase 2
 ```
 
 ---
@@ -50,8 +64,7 @@ apotheekhulp/
 ### Vereisten
 
 - Node.js 20+
-- Supabase CLI (`npm install -g supabase`)
-- AWS CLI (voor Amplify deployment)
+- Supabase CLI — `brew install supabase/tap/supabase`
 
 ### Lokaal opstarten
 
@@ -63,9 +76,8 @@ cd apotheekhulp
 # 2. Installeer dependencies
 npm install
 
-# 3. Kopieer environment variabelen
-cp .env.example .env.local
-# Vul NEXT_PUBLIC_SUPABASE_URL en NEXT_PUBLIC_SUPABASE_ANON_KEY in
+# 3. Kopieer environment variabelen en vul in
+cp .env.local.example .env.local
 
 # 4. Start Supabase lokaal
 supabase start
@@ -77,16 +89,21 @@ supabase db push
 npm run dev
 ```
 
-App draait op [http://localhost:3000](http://localhost:3000).
+App draait op [http://localhost:3000](http://localhost:3000).  
+Supabase Studio: [http://localhost:54323](http://localhost:54323)
 
 ### Environment variabelen
+
+Zie [.env.local.example](.env.local.example). Kopieer naar `.env.local` en vul de waarden in vanuit je Supabase project dashboard.
 
 | Variabele | Beschrijving |
 |-----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-only) |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (public) |
+| `SUPABASE_SECRET_KEY` | Supabase secret key (server-only) |
 | `AWS_SES_REGION` | AWS regio voor e-mailversturing |
+| `AWS_ACCESS_KEY_ID` | AWS access key (fase 9) |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key (fase 9) |
 
 ---
 
