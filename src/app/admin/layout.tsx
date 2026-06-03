@@ -1,4 +1,5 @@
-// Admin layout — nav/sidebar added in fase 2
+import { AppLayout } from '@/components/layout/AppLayout'
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>
+  return <AppLayout>{children}</AppLayout>
 }
