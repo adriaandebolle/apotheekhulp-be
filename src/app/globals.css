@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+/* ─── Design tokens ──────────────────────────────────────────────────────────
+   Colors are TBC — confirm via DevTools on https://www.apotheekhulp.be/
+   Primary is a teal-600 placeholder (#0d9488).
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Primary — groen/teal (placeholder: confirm via DevTools) */
+  --color-primary:        #0d9488;
+  --color-primary-dark:   #0f766e;
+  --color-primary-light:  #ccfbf1;
+
+  /* Surfaces */
+  --color-background:     #f8fafc;
+  --color-surface:        #ffffff;
+
+  /* Text */
+  --color-text:           #0f172a;
+  --color-text-muted:     #64748b;
+
+  /* Border */
+  --color-border:         #e2e8f0;
+
+  /* Status colours */
+  --color-success:        #16a34a;
+  --color-success-light:  #dcfce7;
+  --color-warning:        #d97706;
+  --color-warning-light:  #fef3c7;
+  --color-danger:         #dc2626;
+  --color-danger-light:   #fee2e2;
+  --color-info:           #2563eb;
+  --color-info-light:     #dbeafe;
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
