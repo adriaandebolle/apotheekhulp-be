@@ -1,0 +1,55 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node.js
+node_modules/
+.npm
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment variables
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Supabase
+supabase/.branches/
+supabase/.temp/
+
+# AWS Amplify
+.amplify/
+amplify/
+amplifytools/
+#current-cloud-backend/
+
+# IDEs
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.coverage
+playwright-report/
+test-results/
+
+# Misc
+*.log
+*.bak
+*.tmp
+Thumbs.db
