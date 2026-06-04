@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { IMPERSONATION_COOKIE, type Impersonation } from '@/lib/impersonation-types'
 import { Sidebar } from './Sidebar'
@@ -39,7 +40,8 @@ async function getBadges(
 export async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const authRole = (user?.app_metadata?.role ?? 'assistent') as 'admin' | 'assistent' | 'apotheek'
+  if (!user) redirect('/login')
+  const authRole = user.app_metadata?.role as 'admin' | 'assistent' | 'apotheek'
 
   let impersonation: Impersonation | null = null
   if (authRole === 'admin') {

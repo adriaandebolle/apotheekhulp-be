@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
@@ -21,6 +22,7 @@ export async function startImpersonation(formData: FormData) {
     maxAge: 60 * 60,
   })
 
+  revalidatePath('/admin', 'layout')
   if (role === 'assistent') redirect('/assistent/dashboard')
   if (role === 'apotheek')  redirect('/apotheek/dashboard')
   redirect('/admin/dashboard')
@@ -29,5 +31,7 @@ export async function startImpersonation(formData: FormData) {
 export async function stopImpersonation() {
   const cookieStore = await cookies()
   cookieStore.delete('admin_impersonation')
+  revalidatePath('/assistent', 'layout')
+  revalidatePath('/apotheek', 'layout')
   redirect('/admin/dashboard')
 }

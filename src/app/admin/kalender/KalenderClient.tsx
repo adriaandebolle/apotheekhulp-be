@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import type { Assistent, ShiftData, PharmacyOption } from './page'
 import ShiftAddModal from './ShiftAddModal'
 import ShiftEditModal from './ShiftEditModal'
+import BulkShiftModal from './BulkShiftModal'
 
 // ── Status styling ─────────────────────────────────────────────────────────────
 
@@ -79,6 +80,7 @@ export default function KalenderClient({
   }, [visibleStatuses])
   const [addDate, setAddDate]     = useState<string | null>(null)
   const [editShift, setEditShift] = useState<ShiftData | null>(null)
+  const [bulkOpen, setBulkOpen]   = useState(false)
 
   function toggleAssistent(id: string) {
     setVisibleIds(prev => {
@@ -139,7 +141,10 @@ export default function KalenderClient({
           <p className="text-xs text-text-muted mb-1">Kalender</p>
           <h1 className="text-2xl font-bold text-text">Kalender</h1>
         </div>
-        <Button size="sm" onClick={openAddModal}>+ Shift inplannen</Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setBulkOpen(true)}>Bulk shifts</Button>
+          <Button size="sm" onClick={openAddModal}>+ Shift inplannen</Button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -264,6 +269,13 @@ export default function KalenderClient({
         <ShiftEditModal
           shift={editShift}
           onClose={() => setEditShift(null)}
+        />
+      )}
+      {bulkOpen && (
+        <BulkShiftModal
+          assistants={assistants}
+          pharmacies={pharmacies}
+          onClose={() => setBulkOpen(false)}
         />
       )}
     </>
