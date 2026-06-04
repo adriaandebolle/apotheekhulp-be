@@ -8,6 +8,7 @@ interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
+  badge?: number
   children?: { label: string; href: string }[]
 }
 
@@ -49,19 +50,21 @@ const adminNav: NavItem[] = [
 ]
 
 const assistentNav: NavItem[] = [
-  { label: 'Dashboard',            href: '/assistent/dashboard',            icon: icons.dashboard },
-  { label: 'Kalender',             href: '/assistent/kalender',             icon: icons.kalender },
-  { label: 'Tarificatieberichten', href: '/assistent/tarificatieberichten', icon: icons.tarief },
-  { label: 'Mijn prestaties',      href: '/assistent/prestaties',           icon: icons.prestaties },
-  { label: 'Mijn onbeschikbaarheid', href: '/assistent/onbeschikbaarheid', icon: icons.clock },
-  { label: 'Agenda abonnement',    href: '/assistent/agenda-abonnement',    icon: icons.agenda },
+  { label: 'Dashboard',              href: '/assistent/dashboard',            icon: icons.dashboard },
+  { label: 'Kalender',               href: '/assistent/kalender',             icon: icons.kalender },
+  { label: 'Tarificatieberichten',   href: '/assistent/tarificatieberichten', icon: icons.tarief },
+  { label: 'Mijn prestaties',        href: '/assistent/prestaties',           icon: icons.prestaties },
+  { label: 'Mijn facturen',          href: '/assistent/facturen',             icon: icons.facturen },
+  { label: 'Mijn onbeschikbaarheid', href: '/assistent/onbeschikbaarheid',   icon: icons.clock },
+  { label: 'Agenda abonnement',      href: '/assistent/agenda-abonnement',   icon: icons.agenda },
 ]
 
 const apotheekNav: NavItem[] = [
-  { label: 'Dashboard',   href: '/apotheek/dashboard',   icon: icons.dashboard },
-  { label: 'Kalender',    href: '/apotheek/kalender',    icon: icons.kalender },
-  { label: 'Prestaties',  href: '/apotheek/prestaties',  icon: icons.prestaties },
-  { label: 'Tarificaties',href: '/apotheek/tarificaties',icon: icons.tarief },
+  { label: 'Dashboard',    href: '/apotheek/dashboard',    icon: icons.dashboard },
+  { label: 'Kalender',     href: '/apotheek/kalender',     icon: icons.kalender },
+  { label: 'Prestaties',   href: '/apotheek/prestaties',   icon: icons.prestaties },
+  { label: 'Facturen',     href: '/apotheek/facturen',     icon: icons.facturen },
+  { label: 'Tarificaties', href: '/apotheek/tarificaties', icon: icons.tarief },
 ]
 
 const navByRole: Record<string, NavItem[]> = {
@@ -80,13 +83,17 @@ const homeByRole: Record<string, string> = {
 
 interface SidebarProps {
   role: 'admin' | 'assistent' | 'apotheek'
+  badges?: Partial<Record<string, number>>
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, badges = {} }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
 
-  const nav = navByRole[role] ?? adminNav
+  const nav = (navByRole[role] ?? adminNav).map(item => ({
+    ...item,
+    badge: badges[item.href] ?? item.badge,
+  }))
   const home = homeByRole[role] ?? '/admin/dashboard'
 
   async function handleSignOut() {
@@ -123,6 +130,11 @@ export function Sidebar({ role }: SidebarProps) {
             >
               {item.icon}
               {item.label}
+              {!!item.badge && (
+                <span className="ml-auto text-xs font-semibold bg-danger text-white rounded-full px-1.5 py-0.5 leading-none">
+                  {item.badge}
+                </span>
+              )}
             </Link>
             {item.children && (
               <div className="ml-6 mt-0.5 space-y-0.5">

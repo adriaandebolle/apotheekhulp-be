@@ -4,6 +4,38 @@ import { IMPERSONATION_COOKIE, type Impersonation } from '@/lib/impersonation-ty
 import { Sidebar } from './Sidebar'
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner'
 
+async function getBadges(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  role: 'admin' | 'assistent' | 'apotheek',
+  userId: string,
+): Promise<Partial<Record<string, number>>> {
+  if (role === 'assistent') {
+    const [{ count: prestaties }, { count: facturen }] = await Promise.all([
+      supabase.from('shifts').select('*', { count: 'exact', head: true })
+        .eq('assistant_id', userId).eq('status', 'pending_assistant'),
+      supabase.from('shifts').select('*', { count: 'exact', head: true })
+        .eq('assistant_id', userId).eq('status', 'approved'),
+    ])
+    return {
+      '/assistent/prestaties': prestaties ?? 0,
+      '/assistent/facturen':   facturen   ?? 0,
+    }
+  }
+  if (role === 'apotheek') {
+    // Find all location IDs belonging to this pharmacy user
+    const { data: locations } = await supabase
+      .from('locations').select('id').eq('pharmacy_id', userId)
+    const locationIds = (locations ?? []).map(l => l.id)
+    if (!locationIds.length) return {}
+    const [{ count: prestaties }] = await Promise.all([
+      supabase.from('shifts').select('*', { count: 'exact', head: true })
+        .in('location_id', locationIds).eq('status', 'pending_admin'),
+    ])
+    return { '/apotheek/prestaties': prestaties ?? 0 }
+  }
+  return {}
+}
+
 export async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -19,10 +51,12 @@ export async function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   const effectiveRole = impersonation?.role ?? authRole
+  const effectiveUserId = impersonation?.userId ?? user?.id ?? ''
+  const badges = await getBadges(supabase, effectiveRole, effectiveUserId)
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar role={effectiveRole} />
+      <Sidebar role={effectiveRole} badges={badges} />
       <div className="flex-1 flex flex-col overflow-auto min-w-0">
         {impersonation && (
           <ImpersonationBanner name={impersonation.name} role={impersonation.role} />
