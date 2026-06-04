@@ -14,7 +14,7 @@ export default async function AssistentDetailPage({ params }: Props) {
     { data: userRow },
     { data: assistantProfile },
     { data: links },
-    { data: pharmacies },
+    { data: pharmaciesRaw },
     config,
   ] = await Promise.all([
     admin.auth.admin.getUserById(id),
@@ -27,12 +27,18 @@ export default async function AssistentDetailPage({ params }: Props) {
       km_allowance,
       distance_km,
       locations ( id, name, pharmacy_id, pharmacy_profiles ( user_id, company_name ) )
-    `).eq('assistant_id', id),
-    admin.from('pharmacy_profiles').select('user_id, company_name, locations ( id, name )').order('company_name'),
+    `).eq('assistant_id', id).is('deleted_at', null),
+    admin.from('pharmacy_profiles').select('user_id, company_name, locations ( id, name, deleted_at )').order('company_name'),
     getPlatformConfig(),
   ])
 
   if (authError || !userRow) notFound()
+
+  const pharmacies = (pharmaciesRaw ?? []).map(p => ({
+    user_id:      p.user_id,
+    company_name: p.company_name,
+    locations:    (p.locations ?? []).filter(l => !l.deleted_at).map(({ id, name }) => ({ id, name })),
+  }))
 
   return (
     <div className="p-8">
@@ -47,7 +53,7 @@ export default async function AssistentDetailPage({ params }: Props) {
         user={userRow}
         assistantProfile={assistantProfile}
         links={links ?? []}
-        pharmacies={pharmacies ?? []}
+        pharmacies={pharmacies}
         defaultKmRate={config.km_rate}
         defaultHourlyRateAssistant={config.default_hourly_rate_assistant}
         defaultHourlyRatePharmacy={config.default_hourly_rate_pharmacy}

@@ -37,15 +37,10 @@ export async function updateLocation(
 
 export async function deleteLocation(id: string): Promise<ActionResult> {
   const admin = createAdminClient()
-
-  // Guard: refuse if any shift references this location
-  const { count } = await admin
-    .from('shifts')
-    .select('id', { count: 'exact', head: true })
-    .eq('location_id', id)
-  if ((count ?? 0) > 0) return { error: 'Deze locatie heeft gekoppelde shifts en kan niet worden verwijderd.' }
-
-  const { error } = await admin.from('locations').delete().eq('id', id)
+  const { error } = await admin
+    .from('locations')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/gebruikers/apotheken')

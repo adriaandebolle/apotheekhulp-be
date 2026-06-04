@@ -46,7 +46,10 @@ export async function updateLink(
 
 export async function deleteLink(id: string): Promise<ActionResult> {
   const admin = createAdminClient()
-  const { error } = await admin.from('links').delete().eq('id', id)
+  const { error } = await admin
+    .from('links')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/gebruikers/assistenten')

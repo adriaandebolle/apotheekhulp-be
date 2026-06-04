@@ -17,7 +17,7 @@ export default async function ApotheekDetailPage({ params }: Props) {
     admin.auth.admin.getUserById(id),
     admin.from('users').select('id, phone, is_active').eq('id', id).single(),
     admin.from('pharmacy_profiles').select('*').eq('user_id', id).maybeSingle(),
-    admin.from('locations').select('id, name, address, is_active').eq('pharmacy_id', id).order('name'),
+    admin.from('locations').select('id, name, address, is_active').eq('pharmacy_id', id).is('deleted_at', null).order('name'),
   ])
 
   if (authError || !authData?.user || !userRow) notFound()

@@ -130,7 +130,8 @@ create table public.locations (
   name        text        not null,
   address     text,
   is_active   boolean     not null default true,
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  deleted_at  timestamptz
 );
 
 alter table public.locations enable row level security;
@@ -140,12 +141,13 @@ create policy "admins can manage locations"
   using ((select role from public.users where id = auth.uid()) = 'admin');
 
 create policy "pharmacy can read own locations"
-  on public.locations for select using (pharmacy_id = auth.uid());
+  on public.locations for select using (pharmacy_id = auth.uid() and deleted_at is null);
 
 create policy "assistants can read active locations"
   on public.locations for select
   using (
     is_active = true
+    and deleted_at is null
     and (select role from public.users where id = auth.uid()) = 'assistent'
   );
 
@@ -161,6 +163,7 @@ create table public.links (
   hourly_rate_pharmacy  numeric(8,2),
   km_allowance          numeric(8,4),
   distance_km           numeric(8,2),
+  deleted_at            timestamptz,
   unique (assistant_id, location_id)
 );
 
@@ -171,7 +174,7 @@ create policy "admins can manage links"
   using ((select role from public.users where id = auth.uid()) = 'admin');
 
 create policy "assistant can read own links"
-  on public.links for select using (assistant_id = auth.uid());
+  on public.links for select using (assistant_id = auth.uid() and deleted_at is null);
 
 
 -- ============================================================
@@ -189,7 +192,8 @@ create table public.shifts (
                 check (status in ('pending_assistant', 'confirmed', 'pending_admin', 'approved')),
   notes         text,
   created_at    timestamptz not null default now(),
-  updated_at    timestamptz not null default now()
+  updated_at    timestamptz not null default now(),
+  deleted_at    timestamptz
 );
 
 alter table public.shifts enable row level security;
@@ -199,17 +203,18 @@ create policy "admins can manage all shifts"
   using ((select role from public.users where id = auth.uid()) = 'admin');
 
 create policy "assistant can read own shifts"
-  on public.shifts for select using (assistant_id = auth.uid());
+  on public.shifts for select using (assistant_id = auth.uid() and deleted_at is null);
 
 create policy "assistant can update own pending shifts"
   on public.shifts for update
-  using (assistant_id = auth.uid() and status = 'pending_assistant');
+  using (assistant_id = auth.uid() and status = 'pending_assistant' and deleted_at is null);
 
 create policy "pharmacy can read shifts at own locations"
   on public.shifts for select
   using (
-    location_id in (
-      select id from public.locations where pharmacy_id = auth.uid()
+    deleted_at is null
+    and location_id in (
+      select id from public.locations where pharmacy_id = auth.uid() and deleted_at is null
     )
   );
 

@@ -76,7 +76,10 @@ export async function updateShift(
 
 export async function deleteShift(id: string): Promise<ActionResult> {
   const admin = createAdminClient()
-  const { error } = await admin.from('shifts').delete().eq('id', id)
+  const { error } = await admin
+    .from('shifts')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/kalender')
