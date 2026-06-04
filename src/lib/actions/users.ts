@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendWelcomeEmail } from '@/lib/email'
 
 type ActionResult<T = void> = { error: string } | { data: T }
 
@@ -12,6 +13,8 @@ export async function createAssistant(formData: FormData): Promise<ActionResult<
   const last_name  = (formData.get('last_name')  as string | null)?.trim() || null
 
   if (!email || !password) return { error: 'Email en wachtwoord zijn verplicht.' }
+
+  const sendWelcome = formData.has('send_welcome_email')
 
   const admin = createAdminClient()
   const { data, error } = await admin.auth.admin.createUser({
@@ -46,6 +49,8 @@ export async function createAssistant(formData: FormData): Promise<ActionResult<
     })
   }
 
+  if (sendWelcome) await sendWelcomeEmail(email, password, 'assistent')
+
   revalidatePath('/admin/gebruikers/assistenten')
   return { data: { id: userId } }
 }
@@ -55,6 +60,8 @@ export async function createPharmacy(formData: FormData): Promise<ActionResult<{
   const password = (formData.get('password') as string | null)
 
   if (!email || !password) return { error: 'Email en wachtwoord zijn verplicht.' }
+
+  const sendWelcome = formData.has('send_welcome_email')
 
   const admin = createAdminClient()
   const { data, error } = await admin.auth.admin.createUser({
@@ -87,6 +94,8 @@ export async function createPharmacy(formData: FormData): Promise<ActionResult<{
       updated_at: new Date().toISOString(),
     })
   }
+
+  if (sendWelcome) await sendWelcomeEmail(email, password, 'apotheek')
 
   revalidatePath('/admin/gebruikers/apotheken')
   return { data: { id: userId } }

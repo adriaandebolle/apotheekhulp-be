@@ -125,6 +125,15 @@ export default function NieuweApotheekPage() {
           <p className="text-xs text-text-muted -mt-2">
             Minimaal 8 tekens. De apotheek kan dit na login wijzigen.
           </p>
+
+          <label className="flex items-center gap-2 text-sm text-text cursor-pointer select-none">
+            <input
+              type="checkbox"
+              name="send_welcome_email"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            />
+            Stuur welkomstmail met inloggegevens
+          </label>
         </section>
 
         {/* ── Bedrijfsinformatie ─────────────────────────────────────── */}
