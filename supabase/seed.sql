@@ -94,3 +94,34 @@ update public.users set phone = '+32 9 987 65 43'
 insert into public.pharmacy_profiles (user_id, company_name, vat_number, billing_street, billing_house_number, billing_postcode, billing_city) values
   ('22222222-2222-2222-2222-222222222222', 'Apotheek Centrum',   'BE 0123.456.789', 'Grote Markt',    '1',  '9000', 'Gent'),
   ('66666666-6666-6666-6666-666666666666', 'De Groene Apotheek', 'BE 0987.654.321', 'Stationstraat', '12', '2000', 'Antwerpen');
+
+-- ── Assistent colors ──────────────────────────────────────────────────────────
+update public.users set color = '#3788d8' where id = '11111111-1111-1111-1111-111111111111'; -- Maya
+update public.users set color = '#28a745' where id = '33333333-3333-3333-3333-333333333333'; -- Sophie
+update public.users set color = '#fd7e14' where id = '44444444-4444-4444-4444-444444444444'; -- Emma
+update public.users set color = '#6f42c1' where id = '55555555-5555-5555-5555-555555555555'; -- Pieter
+
+-- ── Locations ─────────────────────────────────────────────────────────────────
+insert into public.locations (id, pharmacy_id, name, address) values
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', 'Hoofdvestiging', 'Grote Markt 1, 9000 Gent'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666', 'Centraal',       'Stationstraat 12, 2000 Antwerpen');
+
+-- ── Shifts (June 2026) ────────────────────────────────────────────────────────
+insert into public.shifts (assistant_id, location_id, date, start_time, end_time, break_minutes, status) values
+  -- Maya — approved
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-02', '08:00', '17:00', 30, 'approved'),
+  ('11111111-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-05', '08:00', '13:00',  0, 'approved'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-09', '08:00', '17:00', 30, 'approved'),
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-16', '08:00', '17:00', 30, 'approved'),
+  ('11111111-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-23', '08:00', '17:00', 30, 'pending_admin'),
+  -- Sophie — mix
+  ('33333333-3333-3333-3333-333333333333', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-03', '09:00', '18:00', 30, 'approved'),
+  ('33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-04', '08:00', '13:00',  0, 'pending_assistant'),
+  ('33333333-3333-3333-3333-333333333333', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-10', '09:00', '18:00', 30, 'approved'),
+  ('33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-17', '09:00', '18:00', 30, 'approved'),
+  ('33333333-3333-3333-3333-333333333333', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-24', '09:00', '13:00',  0, 'pending_admin'),
+  -- Emma — approved
+  ('44444444-4444-4444-4444-444444444444', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-04', '08:00', '17:00', 30, 'approved'),
+  ('44444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-11', '08:00', '17:00', 30, 'approved'),
+  ('44444444-4444-4444-4444-444444444444', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '2026-06-18', '08:00', '13:00',  0, 'pending_assistant'),
+  ('44444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2026-06-25', '08:00', '17:00', 30, 'approved');

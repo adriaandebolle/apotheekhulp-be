@@ -189,7 +189,7 @@ create table public.shifts (
   end_time      time    not null,
   break_minutes integer not null default 0,
   status        text    not null default 'pending_assistant'
-                check (status in ('pending_assistant', 'confirmed', 'pending_admin', 'approved')),
+                check (status in ('pending_assistant', 'confirmed', 'pending_admin', 'approved', 'denied')),
   notes         text,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
