@@ -7,6 +7,7 @@ import { Label, Input } from "@/components/ui/Input";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { AddressAutocomplete } from "@/components/ui/AddressAutocomplete";
 import { VatLookup } from "@/components/ui/VatLookup";
+import { Checkbox } from "@/components/ui/Checkbox";
 import type { ParsedAddress } from "@/app/api/vat-lookup/route";
 
 export default function NieuweAssistentPage() {
@@ -148,15 +149,7 @@ export default function NieuweAssistentPage() {
             Minimaal 8 tekens. De assistent kan dit na login wijzigen.
           </p>
 
-          <label className="flex items-center gap-2 text-sm text-text cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="send_welcome_email"
-              defaultChecked
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            Stuur welkomstmail met inloggegevens
-          </label>
+          <Checkbox name="send_welcome_email" label="Stuur welkomstmail met inloggegevens" defaultChecked />
         </section>
 
         {/* ── Bedrijfsinformatie ─────────────────────────────────────── */}
@@ -172,14 +165,7 @@ export default function NieuweAssistentPage() {
           <div className="grid grid-cols-2 gap-4 items-end">
             <VatLookup onFound={handleVatFound} />
             <div className="pb-px">
-              <label className="flex items-center gap-2 text-sm text-text cursor-pointer select-none pb-2.5">
-                <input
-                  type="checkbox"
-                  name="vat_liable"
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                />
-                BTW plichtig
-              </label>
+              <Checkbox name="vat_liable" label="BTW plichtig" className="pb-2.5" />
             </div>
           </div>
 

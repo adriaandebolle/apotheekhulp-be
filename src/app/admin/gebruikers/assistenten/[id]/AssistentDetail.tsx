@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { Tabs } from '@/components/ui/Tabs'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Label, Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -134,16 +135,7 @@ function PersoonsgegevensTab({ userId, email, user }: { userId: string; email: s
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <input
-          id="is_active"
-          name="is_active"
-          type="checkbox"
-          defaultChecked={user.is_active}
-          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-        />
-        <Label htmlFor="is_active">Account actief</Label>
-      </div>
+      <Checkbox name="is_active" label="Account actief" defaultChecked={user.is_active} />
 
       <Feedback {...feedback} />
 
@@ -186,15 +178,7 @@ function BedrijfsgegevensTab({ userId, profile }: { userId: string; profile: Ass
           <Input id="vat_number" name="vat_number" placeholder="BE 0000.000.000" defaultValue={profile?.vat_number ?? ''} />
         </div>
         <div className="flex items-end pb-2">
-          <label className="flex items-center gap-2 text-sm text-text cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="vat_liable"
-              defaultChecked={profile?.vat_liable ?? false}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            BTW plichtig
-          </label>
+          <Checkbox name="vat_liable" label="BTW plichtig" defaultChecked={profile?.vat_liable ?? false} />
         </div>
       </div>
 

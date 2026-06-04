@@ -15,7 +15,7 @@
 | 1 | Fundament & Auth | 5 | ✅ Afgerond |
 | 2 | Design System | 3 | ✅ Afgerond |
 | 3 | Data model & API | 5 | ✅ Afgerond |
-| 4 | Gebruikersbeheer | 5 | |
+| 4 | Gebruikersbeheer | 5 | ✅ Afgerond |
 | 5 | Kalender & Planning | 4 | |
 | 6 | Prestaties Workflow | 6 | |
 | 7 | Dashboard | 4 | |

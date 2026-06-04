@@ -11,6 +11,7 @@ import { upsertPharmacyProfile } from '@/lib/actions/pharmacy-profiles'
 import { createLocation, updateLocation, deleteLocation } from '@/lib/actions/locations'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 import { Modal } from '@/components/ui/Modal'
+import { Checkbox } from '@/components/ui/Checkbox'
 
 // ─── Single-field address autocomplete ───────────────────────────────────────
 
@@ -193,16 +194,7 @@ function GegevensTab({ userId, email, user }: { userId: string; email: string; u
         <Input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ''} />
       </div>
 
-      <div className="flex items-center gap-3">
-        <input
-          id="is_active"
-          name="is_active"
-          type="checkbox"
-          defaultChecked={user.is_active}
-          className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-        />
-        <Label htmlFor="is_active">Account actief</Label>
-      </div>
+      <Checkbox name="is_active" label="Account actief" defaultChecked={user.is_active} />
 
       <Feedback {...feedback} />
 
@@ -244,15 +236,7 @@ function BedrijfsgegevensTab({ userId, profile }: { userId: string; profile: Pha
           <Input id="vat_number" name="vat_number" placeholder="BE 0000.000.000" defaultValue={profile?.vat_number ?? ''} />
         </div>
         <div className="flex items-end pb-2">
-          <label className="flex items-center gap-2 text-sm text-text cursor-pointer select-none">
-            <input
-              type="checkbox"
-              name="vat_liable"
-              defaultChecked={profile?.vat_liable ?? false}
-              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-            />
-            BTW plichtig
-          </label>
+          <Checkbox name="vat_liable" label="BTW plichtig" defaultChecked={profile?.vat_liable ?? false} />
         </div>
       </div>
 
