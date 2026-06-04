@@ -151,7 +151,8 @@ Geen factuurbeheersysteem. Enkel maandelijkse berekening van gewerkte uren → P
 | # | Taak | Uren |
 |---|------|------|
 | 9.1 | Tarificatieberichten CRUD + rich text editor | 2 |
-| 9.2 | Dagelijkse e-mail digest shift-updates (Supabase Edge Function cron + AWS SES) | 2 |
+| 9.2 | Dagelijkse e-mail digest shift-updates (Supabase Edge Function cron + AWS SES) | 1 |
+| 9.2 | Andere email zoals optionele welkom e-mail bij creatie apotheek/assistent (Supabase Edge Function cron + AWS SES) | 1 |
 | | **Subtotaal** | **4** |
 
 ---
@@ -163,7 +164,7 @@ Pagina's (Home, Over ons, Wat we doen, Contact) zijn reeds gebouwd als neveneffe
 | # | Taak | Uren |
 |---|------|------|
 | 10.1 | ~~Bestaande pagina's kopiëren: Home, Over ons, Wat we doen~~ | ~~2~~ ✅ |
-| 10.2 | Contactformulier → info@apotheekhulp.be | 1 |
+| 10.2 | Contactformulier → info@apotheekhulp.be en Email ter bevestiging van contactontvangst | 1 |
 | | **Subtotaal** | **1** |
 
 ---
