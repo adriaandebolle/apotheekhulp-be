@@ -70,6 +70,7 @@ export default async function HomePage() {
                   alt="Lieselot Van De Velde"
                   fill
                   className="object-cover object-top"
+                  sizes="(max-width: 640px) 6rem, 12rem"
                 />
               </div>
               <div>
@@ -91,6 +92,7 @@ export default async function HomePage() {
                   alt="Carolien Van der Sypt"
                   fill
                   className="object-cover object-top"
+                  sizes="(max-width: 640px) 6rem, 12rem"
                 />
               </div>
               <div>
