@@ -51,9 +51,8 @@ export async function createAssistant(formData: FormData): Promise<ActionResult<
 }
 
 export async function createPharmacy(formData: FormData): Promise<ActionResult<{ id: string }>> {
-  const email        = (formData.get('email')        as string | null)?.trim()
-  const password     = (formData.get('password')     as string | null)
-  const company_name = (formData.get('company_name') as string | null)?.trim() || null
+  const email    = (formData.get('email')    as string | null)?.trim()
+  const password = (formData.get('password') as string | null)
 
   if (!email || !password) return { error: 'Email en wachtwoord zijn verplicht.' }
 
@@ -66,12 +65,31 @@ export async function createPharmacy(formData: FormData): Promise<ActionResult<{
   })
   if (error) return { error: error.message }
 
-  if (company_name) {
-    await admin.from('pharmacy_profiles').upsert({ user_id: data.user.id, company_name, updated_at: new Date().toISOString() })
+  const userId = data.user.id
+
+  const phone = (formData.get('phone') as string | null)?.trim() || null
+  if (phone) {
+    await admin.from('users').update({ phone, updated_at: new Date().toISOString() }).eq('id', userId)
+  }
+
+  const vat_number           = (formData.get('vat_number')           as string | null)?.trim() || null
+  const company_name         = (formData.get('company_name')         as string | null)?.trim() || null
+  const billing_street       = (formData.get('billing_street')       as string | null)?.trim() || null
+  const billing_house_number = (formData.get('billing_house_number') as string | null)?.trim() || null
+  const billing_postcode     = (formData.get('billing_postcode')     as string | null)?.trim() || null
+  const billing_city         = (formData.get('billing_city')         as string | null)?.trim() || null
+  const vat_liable           = formData.has('vat_liable')
+
+  if (vat_number || company_name || billing_street) {
+    await admin.from('pharmacy_profiles').upsert({
+      user_id: userId, vat_number, vat_liable, company_name,
+      billing_street, billing_house_number, billing_postcode, billing_city,
+      updated_at: new Date().toISOString(),
+    })
   }
 
   revalidatePath('/admin/gebruikers/apotheken')
-  return { data: { id: data.user.id } }
+  return { data: { id: userId } }
 }
 
 export async function updateUserProfile(
