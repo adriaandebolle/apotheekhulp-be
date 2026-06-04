@@ -11,16 +11,14 @@ import type { ShiftData } from './page'
 
 const STATUS_LABELS: Record<string, string> = {
   pending_assistant: 'In afwachting assistent',
-  confirmed:         'Bevestigd door assistent',
-  pending_admin:     'In afwachting beheerder',
+  pending_apotheek:  'In afwachting apotheek',
   approved:          'Goedgekeurd',
   denied:            'Geweigerd',
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
   approved:          'success',
-  pending_admin:     'warning',
-  confirmed:         'neutral',
+  pending_apotheek:  'warning',
   pending_assistant: 'neutral',
   denied:            'danger',
 }
@@ -118,7 +116,7 @@ export default function ShiftEditModal({
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="flex gap-2">
-            {shift.status === 'pending_admin' && (
+            {shift.status === 'pending_apotheek' && (
               <>
                 <Button type="button" size="sm" onClick={handleApprove} loading={acting}>
                   Aanvaarden
@@ -150,7 +148,7 @@ export default function ShiftEditModal({
           <strong>{localDateLabel(shift.date)}</strong> wilt verwijderen?
         </p>
         <p className="text-xs text-text-muted mb-6">
-          Deze actie kan ongedaan gemaakt worden door de beheerder.
+          Deze actie kan niet ongedaan gemaakt worden.
         </p>
         <div className="flex justify-end gap-2 pt-4 border-t border-border">
           <Button variant="ghost" onClick={() => setConfirmDelete(false)}>Annuleren</Button>

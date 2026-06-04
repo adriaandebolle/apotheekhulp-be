@@ -161,9 +161,11 @@ create table public.links (
   location_id           uuid    not null references public.locations(id) on delete cascade,
   hourly_rate_assistant numeric(8,2),
   hourly_rate_pharmacy  numeric(8,2),
-  km_allowance          numeric(8,4),
-  distance_km           numeric(8,2),
-  deleted_at            timestamptz,
+  km_allowance              numeric(8,4),
+  distance_km               numeric(8,2),
+  auto_confirm_assistent    boolean not null default false,
+  auto_confirm_apotheek     boolean not null default false,
+  deleted_at                timestamptz,
   unique (assistant_id, location_id)
 );
 
@@ -189,7 +191,7 @@ create table public.shifts (
   end_time      time    not null,
   break_minutes integer not null default 0,
   status        text    not null default 'pending_assistant'
-                check (status in ('pending_assistant', 'confirmed', 'pending_admin', 'approved', 'denied')),
+                check (status in ('pending_assistant', 'pending_apotheek', 'approved', 'denied')),
   notes         text,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
@@ -247,7 +249,7 @@ create policy "assistants can read messages"
 -- ============================================================
 create table public.platform_config (
   id                           integer      primary key default 1 check (id = 1),
-  km_rate                      numeric(6,4) not null default 0.4296,
+  km_rate                      numeric(6,4) not null default 0.4326,
   vat_rate                     numeric(5,2) not null default 21.00,
   default_hourly_rate_assistant numeric(8,2) not null default 0.00,
   default_hourly_rate_pharmacy  numeric(8,2) not null default 0.00,

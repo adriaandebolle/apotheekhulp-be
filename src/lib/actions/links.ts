@@ -12,6 +12,8 @@ export async function createLink(data: {
   hourly_rate_pharmacy?: number | null
   km_allowance?: number | null
   distance_km?: number | null
+  auto_confirm_assistent?: boolean
+  auto_confirm_apotheek?: boolean
 }): Promise<ActionResult<{ id: string }>> {
   if (!data.assistant_id || !data.location_id) return { error: 'Assistent en locatie zijn verplicht.' }
 
@@ -34,6 +36,8 @@ export async function updateLink(
     hourly_rate_pharmacy?: number | null
     km_allowance?: number | null
     distance_km?: number | null
+    auto_confirm_assistent?: boolean
+    auto_confirm_apotheek?: boolean
   },
 ): Promise<ActionResult> {
   const admin = createAdminClient()

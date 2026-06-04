@@ -30,7 +30,7 @@ async function getBadges(
     if (!locationIds.length) return {}
     const [{ count: prestaties }] = await Promise.all([
       supabase.from('shifts').select('*', { count: 'exact', head: true })
-        .in('location_id', locationIds).eq('status', 'pending_admin'),
+        .in('location_id', locationIds).eq('status', 'pending_apotheek'),
     ])
     return { '/apotheek/prestaties': prestaties ?? 0 }
   }

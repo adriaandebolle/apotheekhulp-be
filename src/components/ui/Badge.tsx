@@ -16,7 +16,7 @@ const STATUS_MAP: Record<string, BadgeVariant> = {
   paid:               'success',
   in_afwachting:      'warning',
   pending_assistent:  'warning',
-  pending_admin:      'warning',
+  pending_apotheek:   'warning',
   te_betalen:         'warning',
   geweigerd:          'danger',
   denied_assistent:   'danger',

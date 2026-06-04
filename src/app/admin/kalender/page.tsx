@@ -43,7 +43,7 @@ export type ShiftData = {
   startTime: string
   endTime: string
   breakMinutes: number
-  status: 'pending_assistant' | 'confirmed' | 'pending_admin' | 'approved' | 'denied'
+  status: 'pending_assistant' | 'pending_apotheek' | 'approved' | 'denied'
   assistantName: string
   pharmacyName: string
   locationName: string

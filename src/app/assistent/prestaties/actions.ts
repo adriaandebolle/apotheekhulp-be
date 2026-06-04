@@ -5,9 +5,29 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function confirmShift(id: string): Promise<void> {
   const supabase = await createClient()
+
+  // Look up the shift to find assistant_id + location_id for auto-confirm check
+  const { data: shift } = await supabase
+    .from('shifts')
+    .select('assistant_id, location_id')
+    .eq('id', id)
+    .single()
+
+  let newStatus = 'pending_apotheek'
+  if (shift) {
+    const { data: link } = await supabase
+      .from('links')
+      .select('auto_confirm_apotheek')
+      .eq('assistant_id', shift.assistant_id)
+      .eq('location_id', shift.location_id)
+      .is('deleted_at', null)
+      .maybeSingle()
+    if (link?.auto_confirm_apotheek) newStatus = 'approved'
+  }
+
   const { error } = await supabase
     .from('shifts')
-    .update({ status: 'confirmed' })
+    .update({ status: newStatus })
     .eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/assistent/prestaties')

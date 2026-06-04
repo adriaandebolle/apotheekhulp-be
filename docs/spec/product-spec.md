@@ -193,14 +193,15 @@ Beheerder kan berichten publiceren voor assistenten (bijv. tariefwijzigingen, se
 
 ### 5.10 Prestaties & Workflow
 
-Centrale pagina voor het opvolgen en goedkeuren van alle shifts. Vier stappen:
+Centrale pagina voor het opvolgen en goedkeuren van alle shifts. Drie stappen:
 
-| Stap | Beschrijving | Acties |
-|------|-------------|--------|
-| **1. Wacht op assistent** | Shift aangemaakt, assistent heeft nog niet bevestigd | Bewerken, verwijderen |
-| **2. Wacht op beheerder** | Assistent bevestigd, beheerder keurt goed | Goedkeuren, wijzigen, verwijderen |
-| **3. Goedgekeurd** | Volledig goedgekeurd — assistent- en apotheekkost zichtbaar | — |
-| **4. Klaar voor maandoverzicht** | Selecteer shifts → genereer PDF voor apotheek of assistent | PDF aanmaken |
+| Stap | Status | Beschrijving | Acties |
+|------|--------|-------------|--------|
+| **1. Wacht op assistent** | `pending_assistant` | Shift aangemaakt, assistent heeft nog niet bevestigd | Bewerken, verwijderen |
+| **2. Wacht op apotheek** | `pending_apotheek` | Assistent bevestigd; beheerder keurt goed namens de apotheek | Goedkeuren, wijzigen, verwijderen |
+| **3. Goedgekeurd** | `approved` | Volledig goedgekeurd — assistent- en apotheekkost zichtbaar; selecteer voor maandoverzicht | PDF aanmaken |
+
+Geweigerde shifts (`denied`) kunnen op elk moment teruggedraaid worden. Status `confirmed` bestaat niet — assistent-bevestiging gaat direct naar `pending_apotheek`.
 
 ---
 

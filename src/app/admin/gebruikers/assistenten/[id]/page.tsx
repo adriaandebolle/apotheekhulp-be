@@ -26,6 +26,8 @@ export default async function AssistentDetailPage({ params }: Props) {
       hourly_rate_pharmacy,
       km_allowance,
       distance_km,
+      auto_confirm_assistent,
+      auto_confirm_apotheek,
       locations ( id, name, pharmacy_id, pharmacy_profiles ( user_id, company_name ) )
     `).eq('assistant_id', id).is('deleted_at', null),
     admin.from('pharmacy_profiles').select('user_id, company_name, locations ( id, name, deleted_at )').order('company_name'),

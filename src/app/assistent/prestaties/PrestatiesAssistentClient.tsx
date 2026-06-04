@@ -1,7 +1,8 @@
 'use client'
 
 import { useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
@@ -36,16 +37,14 @@ function calcHours(startTime: string, endTime: string, breakMinutes: number): st
 
 const STATUS_LABEL: Record<string, string> = {
   pending_assistant: 'Bevestiging vereist',
-  confirmed:         'Bevestigd',
-  pending_admin:     'In behandeling',
+  pending_apotheek:  'In behandeling',
   approved:          'Goedgekeurd',
   denied:            'Geweigerd',
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral' | 'info'> = {
   approved:          'success',
-  confirmed:         'info',
-  pending_admin:     'warning',
+  pending_apotheek:  'warning',
   pending_assistant: 'warning',
   denied:            'danger',
 }
@@ -69,10 +68,56 @@ function ConfirmCell({ shift }: { shift: AssistentShift }) {
   )
 }
 
-export default function PrestatiesAssistentClient({ shifts }: { shifts: AssistentShift[] }) {
-  const pending  = shifts.filter(s => s.status === 'pending_assistant')
-  const history  = shifts.filter(s => s.status !== 'pending_assistant')
+function PaginationBar({
+  page, total, pageSize, paramName,
+}: {
+  page: number
+  total: number
+  pageSize: number
+  paramName: string
+}) {
+  const pathname     = usePathname()
+  const searchParams = useSearchParams()
+  const totalPages   = Math.ceil(total / pageSize)
+  if (totalPages <= 1) return null
 
+  function href(p: number) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set(paramName, String(p))
+    return `${pathname}?${params}`
+  }
+
+  return (
+    <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-slate-50 text-sm text-text-muted">
+      <span>{total} shifts totaal</span>
+      <div className="flex items-center gap-3">
+        {page > 0
+          ? <Link href={href(page - 1)} className="text-primary hover:underline">← Vorige</Link>
+          : <span className="opacity-30">← Vorige</span>
+        }
+        <span>Pagina {page + 1} / {totalPages}</span>
+        {page < totalPages - 1
+          ? <Link href={href(page + 1)} className="text-primary hover:underline">Volgende →</Link>
+          : <span className="opacity-30">Volgende →</span>
+        }
+      </div>
+    </div>
+  )
+}
+
+export default function PrestatiesAssistentClient({
+  pending,
+  history,
+  historyTotal,
+  historyPage,
+  pageSize,
+}: {
+  pending: AssistentShift[]
+  history: AssistentShift[]
+  historyTotal: number
+  historyPage: number
+  pageSize: number
+}) {
   return (
     <>
       {/* ── Page header ─────────────────────────────────────────────────── */}
@@ -133,7 +178,7 @@ export default function PrestatiesAssistentClient({ shifts }: { shifts: Assisten
         <section>
           <div className="flex items-center gap-3 px-6 py-4 bg-slate-50 border-b border-border">
             <h2 className="text-sm font-semibold text-text uppercase tracking-wide">Historiek</h2>
-            <span className="text-xs text-text-muted">({history.length})</span>
+            <span className="text-xs text-text-muted">({historyTotal})</span>
           </div>
           <Table>
             <Thead>
@@ -171,6 +216,7 @@ export default function PrestatiesAssistentClient({ shifts }: { shifts: Assisten
               }
             </Tbody>
           </Table>
+          <PaginationBar page={historyPage} total={historyTotal} pageSize={pageSize} paramName="ph" />
         </section>
       </div>
     </>

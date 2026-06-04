@@ -3,25 +3,39 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import PrestatiesAssistentClient, { type AssistentShift } from './PrestatiesAssistentClient'
 
-export default async function AssistentPrestatiesPage() {
+const PAGE = 25
+
+const SHIFT_SELECT = `
+  id, date, start_time, end_time, break_minutes, status, notes,
+  location:locations(name, pharmacy:pharmacy_profiles(company_name))
+`
+
+export default async function AssistentPrestatiesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Admin client needed because pharmacy_profiles has no RLS policy for assistants.
-  // The assistant_id filter below limits results to the current user's shifts only.
-  const adminSupabase = createAdminClient()
-  const { data: rawShifts } = await adminSupabase
-    .from('shifts')
-    .select(`
-      id, date, start_time, end_time, break_minutes, status, notes,
-      location:locations(name, pharmacy:pharmacy_profiles(company_name))
-    `)
-    .eq('assistant_id', user.id)
-    .is('deleted_at', null)
-    .order('date', { ascending: false })
+  const params   = await searchParams
+  const pageHist = Math.max(0, parseInt(params.ph ?? '0', 10) || 0)
 
-  const shifts: AssistentShift[] = (rawShifts ?? []).map(s => {
+  // Admin client needed because pharmacy_profiles has no RLS policy for assistants.
+  const adminSupabase = createAdminClient()
+
+  const [pendingResult, histResult] = await Promise.all([
+    adminSupabase.from('shifts').select(SHIFT_SELECT)
+      .eq('assistant_id', user.id).eq('status', 'pending_assistant')
+      .is('deleted_at', null).order('date', { ascending: true }),
+    adminSupabase.from('shifts').select(SHIFT_SELECT, { count: 'exact' })
+      .eq('assistant_id', user.id).neq('status', 'pending_assistant')
+      .is('deleted_at', null).order('date', { ascending: false })
+      .range(pageHist * PAGE, pageHist * PAGE + PAGE - 1),
+  ])
+
+  function mapShift(s: NonNullable<typeof pendingResult.data>[number]): AssistentShift {
     const loc = s.location as unknown as { name: string; pharmacy: { company_name: string | null } | null } | null
     return {
       id:           s.id,
@@ -34,11 +48,17 @@ export default async function AssistentPrestatiesPage() {
       locationName: loc?.name ?? '—',
       notes:        (s.notes as string | null) ?? null,
     }
-  })
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <PrestatiesAssistentClient shifts={shifts} />
+      <PrestatiesAssistentClient
+        pending={(pendingResult.data ?? []).map(mapShift)}
+        history={(histResult.data ?? []).map(mapShift)}
+        historyTotal={histResult.count ?? 0}
+        historyPage={pageHist}
+        pageSize={PAGE}
+      />
     </div>
   )
 }

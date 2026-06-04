@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
@@ -33,6 +34,11 @@ function fmtDate(iso: string): string {
   })
 }
 
+function fmtMonth(ym: string) {
+  const [y, m] = ym.split('-').map(Number)
+  return new Date(y, m - 1, 1).toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' })
+}
+
 function toShiftData(s: PrestatieShift): ShiftData {
   return {
     id: s.id, assistantId: s.assistantId, locationId: s.locationId,
@@ -45,16 +51,14 @@ function toShiftData(s: PrestatieShift): ShiftData {
 
 const STATUS_LABEL: Record<string, string> = {
   pending_assistant: 'In afwachting assistent',
-  confirmed:         'Bevestigd door assistent',
-  pending_admin:     'In afwachting beheerder',
+  pending_apotheek:  'In afwachting apotheek',
   approved:          'Goedgekeurd',
   denied:            'Geweigerd',
 }
 
 const STATUS_VARIANT: Record<string, 'success' | 'warning' | 'danger' | 'neutral'> = {
   approved:          'success',
-  pending_admin:     'warning',
-  confirmed:         'warning',
+  pending_apotheek:  'warning',
   pending_assistant: 'neutral',
   denied:            'danger',
 }
@@ -68,6 +72,45 @@ function SectionHeader({ title, count }: { title: string; count: number }) {
       <span className="text-xs font-semibold bg-primary text-white rounded-full px-2 py-0.5 leading-none">
         {count}
       </span>
+    </div>
+  )
+}
+
+// ── Pagination bar ─────────────────────────────────────────────────────────────
+
+function PaginationBar({
+  page, total, pageSize, paramName,
+}: {
+  page: number
+  total: number
+  pageSize: number
+  paramName: string
+}) {
+  const pathname   = usePathname()
+  const searchParams = useSearchParams()
+  const totalPages = Math.ceil(total / pageSize)
+  if (totalPages <= 1) return null
+
+  function href(p: number) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set(paramName, String(p))
+    return `${pathname}?${params}`
+  }
+
+  return (
+    <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-slate-50 text-sm text-text-muted">
+      <span>{total} shifts totaal</span>
+      <div className="flex items-center gap-3">
+        {page > 0
+          ? <Link href={href(page - 1)} className="text-primary hover:underline">← Vorige</Link>
+          : <span className="opacity-30">← Vorige</span>
+        }
+        <span>Pagina {page + 1} / {totalPages}</span>
+        {page < totalPages - 1
+          ? <Link href={href(page + 1)} className="text-primary hover:underline">Volgende →</Link>
+          : <span className="opacity-30">Volgende →</span>
+        }
+      </div>
     </div>
   )
 }
@@ -121,42 +164,39 @@ function ActionCell({
   )
 }
 
-// ── Month filter ───────────────────────────────────────────────────────────────
-
-function monthKey(date: string) { return date.slice(0, 7) } // "YYYY-MM"
-
-function fmtMonth(ym: string) {
-  const [y, m] = ym.split('-').map(Number)
-  return new Date(y, m - 1, 1).toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' })
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function PrestatiesClient({
-  shifts,
+  section1,
+  section2,
+  section3,
   config,
   assistants,
   pharmacies,
+  pageSize,
 }: {
-  shifts: PrestatieShift[]
+  section1: { shifts: PrestatieShift[]; total: number; page: number }
+  section2: { shifts: PrestatieShift[]; total: number; page: number }
+  section3: { shifts: PrestatieShift[]; total: number; page: number; month: string; months: string[] }
   config: PlatformConfig
   assistants: Assistent[]
   pharmacies: PharmacyOption[]
+  pageSize: number
 }) {
+  const router   = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   const [editShift, setEditShift] = useState<PrestatieShift | null>(null)
-
-  const pending   = shifts.filter(s => s.status === 'pending_assistant')
-  const toApprove = shifts.filter(s => s.status === 'confirmed' || s.status === 'pending_admin')
-  const approved  = shifts.filter(s => s.status === 'approved')
-
-  // Month filter for approved section
-  const approvedMonths = [...new Set(approved.map(s => monthKey(s.date)))].sort().reverse()
-  const currentMonth = monthKey(new Date().toISOString())
-  const defaultMonth = approvedMonths.includes(currentMonth) ? currentMonth : (approvedMonths[0] ?? currentMonth)
-  const [selectedMonth, setSelectedMonth] = useState(defaultMonth)
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set())
 
-  const approvedFiltered = approved.filter(s => monthKey(s.date) === selectedMonth)
+  function setMonth(m: string) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('month', m)
+    params.delete('p3')
+    router.push(`${pathname}?${params}`)
+    setCheckedIds(new Set())
+  }
 
   function toggleCheck(id: string) {
     setCheckedIds(prev => {
@@ -165,25 +205,17 @@ export default function PrestatiesClient({
       return next
     })
   }
+
   function toggleAll() {
-    const allIds = approvedFiltered.map(s => s.id)
+    const allIds = section3.shifts.map(s => s.id)
     const allChecked = allIds.every(id => checkedIds.has(id))
     if (allChecked) setCheckedIds(prev => { const n = new Set(prev); allIds.forEach(id => n.delete(id)); return n })
     else setCheckedIds(prev => { const n = new Set(prev); allIds.forEach(id => n.add(id)); return n })
   }
 
-  // Cost summary for selected approved shifts
-  const selectedShifts = approvedFiltered.filter(s => checkedIds.has(s.id))
-  const totalCostAssistant = selectedShifts.reduce((sum, s) => {
-    const h    = calcHours(s.startTime, s.endTime, s.breakMinutes)
-    const rate = s.hourlyRateAssistant ?? config.defaultRateAssistant
-    return sum + h * rate
-  }, 0)
-  const totalCostPharmacy = selectedShifts.reduce((sum, s) => {
-    const h    = calcHours(s.startTime, s.endTime, s.breakMinutes)
-    const rate = s.hourlyRatePharmacy ?? config.defaultRatePharmacy
-    return sum + h * rate
-  }, 0)
+  const selectedShifts  = section3.shifts.filter(s => checkedIds.has(s.id))
+  const totalCostAss    = selectedShifts.reduce((sum, s) => sum + calcHours(s.startTime, s.endTime, s.breakMinutes) * (s.hourlyRateAssistant ?? config.defaultRateAssistant), 0)
+  const totalCostApo    = selectedShifts.reduce((sum, s) => sum + calcHours(s.startTime, s.endTime, s.breakMinutes) * (s.hourlyRatePharmacy  ?? config.defaultRatePharmacy), 0)
 
   return (
     <>
@@ -200,7 +232,7 @@ export default function PrestatiesClient({
 
         {/* ── Section 1: Te bevestigen door assistent ──────────────────── */}
         <section className="border-b border-border">
-          <SectionHeader title="1. Te bevestigen door assistent" count={pending.length} />
+          <SectionHeader title="1. Te bevestigen door assistent" count={section1.total} />
           <Table>
             <Thead>
               <tr>
@@ -212,9 +244,9 @@ export default function PrestatiesClient({
               </tr>
             </Thead>
             <Tbody>
-              {pending.length === 0
+              {section1.shifts.length === 0
                 ? <EmptyRow colSpan={5} message="Geen shifts in afwachting van bevestiging." />
-                : pending.map(s => (
+                : section1.shifts.map(s => (
                   <Tr key={s.id}>
                     <Td>{fmtDate(s.date)}</Td>
                     <Td>
@@ -236,11 +268,12 @@ export default function PrestatiesClient({
               }
             </Tbody>
           </Table>
+          <PaginationBar page={section1.page} total={section1.total} pageSize={pageSize} paramName="p1" />
         </section>
 
-        {/* ── Section 2: Te goedkeuren door beheerder ──────────────────── */}
+        {/* ── Section 2: Goed te keuren door apotheek ───────────────────── */}
         <section className="border-b border-border">
-          <SectionHeader title="2. Te goedkeuren door beheerder" count={toApprove.length} />
+          <SectionHeader title="2. Goed te keuren door apotheek" count={section2.total} />
           <Table>
             <Thead>
               <tr>
@@ -253,9 +286,9 @@ export default function PrestatiesClient({
               </tr>
             </Thead>
             <Tbody>
-              {toApprove.length === 0
+              {section2.shifts.length === 0
                 ? <EmptyRow colSpan={6} message="Geen shifts te goedkeuren." />
-                : toApprove.map(s => (
+                : section2.shifts.map(s => (
                   <Tr key={s.id}>
                     <Td>{fmtDate(s.date)}</Td>
                     <Td>
@@ -282,9 +315,10 @@ export default function PrestatiesClient({
               }
             </Tbody>
           </Table>
+          <PaginationBar page={section2.page} total={section2.total} pageSize={pageSize} paramName="p2" />
         </section>
 
-        {/* ── Section 3 & 4: Goedgekeurde prestaties ───────────────────── */}
+        {/* ── Section 3: Goedgekeurde prestaties ───────────────────────── */}
         <section>
           <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-border">
             <div className="flex items-center gap-3">
@@ -292,17 +326,17 @@ export default function PrestatiesClient({
                 3. Goedgekeurde prestaties
               </h2>
               <span className="text-xs font-semibold bg-success text-white rounded-full px-2 py-0.5 leading-none">
-                {approved.length}
+                {section3.total}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              {approvedMonths.length > 0 && (
+              {section3.months.length > 0 && (
                 <select
-                  value={selectedMonth}
-                  onChange={e => { setSelectedMonth(e.target.value); setCheckedIds(new Set()) }}
+                  value={section3.month}
+                  onChange={e => setMonth(e.target.value)}
                   className="text-sm border border-border rounded-md px-3 py-1.5 bg-white text-text focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  {approvedMonths.map(m => (
+                  {section3.months.map(m => (
                     <option key={m} value={m}>{fmtMonth(m)}</option>
                   ))}
                 </select>
@@ -316,8 +350,8 @@ export default function PrestatiesClient({
               <span className="text-sm text-primary font-medium">
                 {checkedIds.size} shift{checkedIds.size !== 1 ? 's' : ''} geselecteerd
                 {' '}—{' '}
-                Assistent: <strong>{fmtMoney(totalCostAssistant)}</strong>
-                {' '} / Apotheek: <strong>{fmtMoney(totalCostPharmacy)}</strong>
+                Assistent: <strong>{fmtMoney(totalCostAss)}</strong>
+                {' '} / Apotheek: <strong>{fmtMoney(totalCostApo)}</strong>
               </span>
               <div className="flex gap-2">
                 <Button size="sm" variant="secondary" disabled title="Beschikbaar in fase 8">
@@ -337,7 +371,7 @@ export default function PrestatiesClient({
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                    checked={approvedFiltered.length > 0 && approvedFiltered.every(s => checkedIds.has(s.id))}
+                    checked={section3.shifts.length > 0 && section3.shifts.every(s => checkedIds.has(s.id))}
                     onChange={toggleAll}
                   />
                 </Th>
@@ -352,16 +386,14 @@ export default function PrestatiesClient({
               </tr>
             </Thead>
             <Tbody>
-              {approvedFiltered.length === 0
+              {section3.shifts.length === 0
                 ? <EmptyRow colSpan={9} message="Geen goedgekeurde prestaties voor deze maand." />
-                : approvedFiltered.map(s => {
-                  const hours        = calcHours(s.startTime, s.endTime, s.breakMinutes)
-                  const rateAss      = s.hourlyRateAssistant ?? config.defaultRateAssistant
-                  const rateApo      = s.hourlyRatePharmacy  ?? config.defaultRatePharmacy
-                  const amountAss    = hours * rateAss
-                  const amountApo    = hours * rateApo
-                  const noRateAss    = s.hourlyRateAssistant === null
-                  const noRateApo    = s.hourlyRatePharmacy  === null
+                : section3.shifts.map(s => {
+                  const hours     = calcHours(s.startTime, s.endTime, s.breakMinutes)
+                  const rateAss   = s.hourlyRateAssistant ?? config.defaultRateAssistant
+                  const rateApo   = s.hourlyRatePharmacy  ?? config.defaultRatePharmacy
+                  const noRateAss = s.hourlyRateAssistant === null
+                  const noRateApo = s.hourlyRatePharmacy  === null
                   return (
                     <Tr key={s.id}>
                       <Td>
@@ -384,14 +416,10 @@ export default function PrestatiesClient({
                         <span className="text-text-muted"> — {s.locationName}</span>
                       </Td>
                       <Td>{fmtHours(hours)}</Td>
-                      <Td className={noRateAss ? 'text-warning' : ''}>
-                        {fmtMoney(rateAss)}/u{noRateAss ? '*' : ''}
-                      </Td>
-                      <Td className="font-medium">{fmtMoney(amountAss)}</Td>
-                      <Td className={noRateApo ? 'text-warning' : ''}>
-                        {fmtMoney(rateApo)}/u{noRateApo ? '*' : ''}
-                      </Td>
-                      <Td className="font-medium">{fmtMoney(amountApo)}</Td>
+                      <Td className={noRateAss ? 'text-warning' : ''}>{fmtMoney(rateAss)}/u{noRateAss ? '*' : ''}</Td>
+                      <Td className="font-medium">{fmtMoney(hours * rateAss)}</Td>
+                      <Td className={noRateApo ? 'text-warning' : ''}>{fmtMoney(rateApo)}/u{noRateApo ? '*' : ''}</Td>
+                      <Td className="font-medium">{fmtMoney(hours * rateApo)}</Td>
                     </Tr>
                   )
                 })
@@ -400,7 +428,7 @@ export default function PrestatiesClient({
           </Table>
 
           {/* Totals footer */}
-          {approvedFiltered.length > 0 && (
+          {section3.shifts.length > 0 && (
             <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-slate-50 text-sm">
               <div className="text-text-muted text-xs">
                 * Geen specifiek tarief voor dit koppel — standaardtarief gebruikt
@@ -409,7 +437,7 @@ export default function PrestatiesClient({
                 <span>
                   Totaal assistent:{' '}
                   <strong>
-                    {fmtMoney(approvedFiltered.reduce((sum, s) => {
+                    {fmtMoney(section3.shifts.reduce((sum, s) => {
                       const h = calcHours(s.startTime, s.endTime, s.breakMinutes)
                       return sum + h * (s.hourlyRateAssistant ?? config.defaultRateAssistant)
                     }, 0))}
@@ -418,7 +446,7 @@ export default function PrestatiesClient({
                 <span>
                   Totaal apotheek:{' '}
                   <strong>
-                    {fmtMoney(approvedFiltered.reduce((sum, s) => {
+                    {fmtMoney(section3.shifts.reduce((sum, s) => {
                       const h = calcHours(s.startTime, s.endTime, s.breakMinutes)
                       return sum + h * (s.hourlyRatePharmacy ?? config.defaultRatePharmacy)
                     }, 0))}
@@ -427,6 +455,8 @@ export default function PrestatiesClient({
               </div>
             </div>
           )}
+
+          <PaginationBar page={section3.page} total={section3.total} pageSize={pageSize} paramName="p3" />
         </section>
       </div>
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { resolveInitialStatus } from '@/lib/actions/shifts'
 
 export type ShiftFormState =
   | null
@@ -27,6 +28,7 @@ export async function createShift(
   if (startTime >= endTime) return { type: 'error', message: 'Einduur moet na beginuur liggen.' }
 
   const supabase = createAdminClient()
+  const status = await resolveInitialStatus(assistantId, locationId, supabase)
   const { error } = await supabase.from('shifts').insert({
     assistant_id:   assistantId,
     location_id:    locationId,
@@ -34,7 +36,7 @@ export async function createShift(
     start_time:     startTime,
     end_time:       endTime,
     break_minutes:  breakMinutes,
-    status:         'pending_assistant',
+    status,
   })
 
   if (error) return { type: 'error', message: error.message }
@@ -108,11 +110,12 @@ export async function createBulkShifts(
   if (validDates.length === 0) return { type: 'error', message: 'Voeg minstens één datum toe.' }
 
   const supabase = createAdminClient()
+  const status = await resolveInitialStatus(assistantId, locationId, supabase)
   const { error } = await supabase.from('shifts').insert(
     validDates.map(date => ({
       assistant_id: assistantId, location_id: locationId,
       date, start_time: startTime, end_time: endTime,
-      break_minutes: breakMinutes, status: 'pending_assistant',
+      break_minutes: breakMinutes, status,
     }))
   )
 

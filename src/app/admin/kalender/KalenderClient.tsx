@@ -18,8 +18,7 @@ import BulkShiftModal from './BulkShiftModal'
 
 const STATUS_OPACITY: Record<string, number> = {
   approved:          1,
-  pending_admin:     0.75,
-  confirmed:         0.65,
+  pending_apotheek:  0.75,
   pending_assistant: 0.5,
   denied:            0.35,
 }
@@ -46,7 +45,7 @@ export default function KalenderClient({
   shifts: ShiftData[]
   pharmacies: PharmacyOption[]
 }) {
-  const ALL_STATUSES = ['approved', 'pending_admin', 'confirmed', 'pending_assistant', 'denied'] as const
+  const ALL_STATUSES = ['approved', 'pending_apotheek', 'pending_assistant', 'denied'] as const
   type Status = typeof ALL_STATUSES[number]
 
   const [visibleIds, setVisibleIds] = useState<Set<string>>(() => {
@@ -193,11 +192,10 @@ export default function KalenderClient({
             <ul className="space-y-1.5">
               {(
                 [
-                  { status: 'approved'          as Status, label: 'Goedgekeurd',           color: '#28a745', opacity: 1    },
-                  { status: 'pending_admin'      as Status, label: 'In afwachting admin',   color: '#fd7e14', opacity: 0.75 },
-                  { status: 'confirmed'          as Status, label: 'Bevestigd assistent',   color: '#6c757d', opacity: 0.65 },
-                  { status: 'pending_assistant'  as Status, label: 'In afwachting assistent', color: '#6c757d', opacity: 0.5 },
-                  { status: 'denied'             as Status, label: 'Geweigerd',             color: '#dc3545', opacity: 0.35 },
+                  { status: 'approved'          as Status, label: 'Goedgekeurd',              color: '#28a745', opacity: 1    },
+                  { status: 'pending_apotheek'  as Status, label: 'In afwachting apotheek',  color: '#fd7e14', opacity: 0.75 },
+                  { status: 'pending_assistant' as Status, label: 'In afwachting assistent', color: '#6c757d', opacity: 0.5  },
+                  { status: 'denied'            as Status, label: 'Geweigerd',               color: '#dc3545', opacity: 0.35 },
                 ] as const
               ).map(({ status, label, color, opacity }) => (
                 <li key={status}>

@@ -17,7 +17,7 @@
 | 3 | Data model & API | 5 | ✅ Afgerond |
 | 4 | Gebruikersbeheer | 5 | ✅ Afgerond |
 | 5 | Kalender & Planning | 4 | ✅ Afgerond |
-| 6 | Prestaties Workflow | 6 | |
+| 6 | Prestaties Workflow | 6 | ✅ Afgerond |
 | 7 | Dashboard | 4 | |
 | 8 | Maandelijkse PDF-berekening | 4 | |
 | 9 | Berichten & E-mail | 4 | |
@@ -112,9 +112,9 @@ Rechttoe rechtaan CRUD — formuliervelden volledig gekend vanuit audit. Lijstpa
 
 | # | Taak | Uren |
 |---|------|------|
-| 6.1 | Statusmachine shifts (pending_assistant → confirmed → pending_admin → approved) | 1 |
-| 6.2 | Sectie 1 & 2: te bevestigen door assistent / te goedkeuren door beheerder | 2 |
-| 6.3 | Sectie 3 & 4: goedgekeurd met bedragen + selectie voor PDF-generatie | 2 |
+| 6.1 | Statusmachine shifts (pending_assistant → pending_apotheek → approved) | 1 |
+| 6.2 | Sectie 1 & 2: te bevestigen door assistent / goed te keuren door apotheek (beheerder namens apotheek) | 2 |
+| 6.3 | Sectie 3: goedgekeurd met bedragen + selectie voor PDF-generatie | 2 |
 | 6.4 | Bulk shifts aanmaken (multi-date formulier) | 1 |
 | | **Subtotaal** | **6** |
 
@@ -210,8 +210,8 @@ Testing gebeurt geïntegreerd per onderdeel tijdens de ontwikkeling.
 
 | | Uren | Bedrag |
 |---|---|---|
-| Reeds uitgevoerd (fase 0–3 + fase 10 pagina's) | ~20u | ~€1.800 |
-| Resterend (fase 4–13) | ~39u | ~€3.510 |
+| Reeds uitgevoerd (fase 0–6 + fase 10 pagina's) | ~32u | ~€2.880 |
+| Resterend (fase 7–13) | ~27u | ~€2.430 |
 | **Totaal excl. BTW** | **59u** | **€5.310** |
 | BTW 21% | | €1.115 |
 | **Totaal incl. BTW** | | **€6.425** |
@@ -235,9 +235,9 @@ Streefdatum: **1 juli 2026** (27 resterende kalenderdagen)
 | Week | Fases | Focus |
 |------|-------|-------|
 | Week 1 (5–8 jun) | 4 | Gebruikersbeheer create/edit formulieren |
-| Week 2 (9–15 jun) | 5 + 6 | Kalender + Prestaties workflow |
-| Week 3 (16–22 jun) | 7 + 8 + 9 | Dashboard + PDF + Berichten |
-| Week 4 (23–29 jun) | 10 + 11 + 12 + 13 | Contact e-mail + Portalen + Deployment |
+| Week 2 (9–15 jun) | 7 + 8 | Dashboard + PDF-berekening |
+| Week 3 (16–22 jun) | 9 + 11 | Berichten + Assistent portaal |
+| Week 4 (23–29 jun) | 10 + 12 + 13 | Contact e-mail + Apotheek portaal + Deployment |
 
 ---
 

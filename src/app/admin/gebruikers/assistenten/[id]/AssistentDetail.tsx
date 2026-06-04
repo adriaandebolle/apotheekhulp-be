@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
 import { updateUserProfile, adminChangePassword } from '@/lib/actions/users'
 import { upsertAssistantProfile } from '@/lib/actions/assistant-profiles'
-import { createLink, deleteLink } from '@/lib/actions/links'
+import { createLink, updateLink, deleteLink } from '@/lib/actions/links'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -40,6 +40,8 @@ type LinkRow = {
   hourly_rate_pharmacy: number | null
   km_allowance: number | null
   distance_km: number | null
+  auto_confirm_assistent: boolean
+  auto_confirm_apotheek: boolean
   locations: {
     id: string
     name: string
@@ -231,6 +233,20 @@ function VerbondenApothekenTab({
   const [addError, setAddError] = useState<string>()
   const [isPendingAdd, startAdd] = useTransition()
   const [deletingId, setDeletingId] = useState<string>()
+  const [togglingId, setTogglingId] = useState<string>()
+
+  async function handleToggle(linkId: string, field: 'auto_confirm_assistent' | 'auto_confirm_apotheek') {
+    setTogglingId(linkId)
+    const current = links.find(l => l.id === linkId)
+    if (!current) return
+    const result = await updateLink(linkId, { [field]: !current[field] })
+    if ('error' in result) {
+      alert(result.error)
+    } else {
+      setLinks(prev => prev.map(l => l.id === linkId ? { ...l, [field]: !l[field] } : l))
+    }
+    setTogglingId(undefined)
+  }
 
   const selectedPharmacy = pharmacies.find(p => p.user_id === selectedPharmacyId)
   const availableLocations = selectedPharmacy?.locations ?? []
@@ -241,12 +257,14 @@ function VerbondenApothekenTab({
     setAddError(undefined)
     startAdd(async () => {
       const result = await createLink({
-        assistant_id:          userId,
-        location_id:           fd.get('location_id') as string,
-        hourly_rate_assistant: parseFloat(fd.get('hourly_rate_assistant') as string) || null,
-        hourly_rate_pharmacy:  parseFloat(fd.get('hourly_rate_pharmacy')  as string) || null,
-        km_allowance:          parseFloat(fd.get('km_allowance')          as string) || null,
-        distance_km:           parseFloat(fd.get('distance_km')           as string) || null,
+        assistant_id:           userId,
+        location_id:            fd.get('location_id') as string,
+        hourly_rate_assistant:  parseFloat(fd.get('hourly_rate_assistant') as string) || null,
+        hourly_rate_pharmacy:   parseFloat(fd.get('hourly_rate_pharmacy')  as string) || null,
+        km_allowance:           parseFloat(fd.get('km_allowance')          as string) || null,
+        distance_km:            parseFloat(fd.get('distance_km')           as string) || null,
+        auto_confirm_assistent: fd.get('auto_confirm_assistent') === 'on',
+        auto_confirm_apotheek:  fd.get('auto_confirm_apotheek')  === 'on',
       })
       if ('error' in result) {
         setAddError(result.error)
@@ -277,15 +295,17 @@ function VerbondenApothekenTab({
           <Tr>
             <Th>Apotheek</Th>
             <Th>Locatie</Th>
-            <Th>Tarief assistent</Th>
-            <Th>Tarief apotheek</Th>
+            <Th>Tarief ass.</Th>
+            <Th>Tarief apo.</Th>
             <Th>Afstand</Th>
             <Th>KM-verg.</Th>
+            <Th title="Assistent bevestigt automatisch">Auto ass.</Th>
+            <Th title="Apotheek keurt automatisch goed">Auto apo.</Th>
             <Th></Th>
           </Tr>
         </Thead>
         <Tbody>
-          {links.length === 0 && <EmptyRow colSpan={7} message="Nog geen gekoppelde apotheken." />}
+          {links.length === 0 && <EmptyRow colSpan={9} message="Nog geen gekoppelde apotheken." />}
           {links.map(link => (
             <Tr key={link.id}>
               <Td>{link.locations?.[0]?.pharmacy_profiles?.[0]?.company_name ?? '—'}</Td>
@@ -294,6 +314,26 @@ function VerbondenApothekenTab({
               <Td>{link.hourly_rate_pharmacy  != null ? `€${link.hourly_rate_pharmacy}/u`  : '—'}</Td>
               <Td>{link.distance_km           != null ? `${link.distance_km} km`           : '—'}</Td>
               <Td>{link.km_allowance          != null ? `€${link.km_allowance}/km`         : '—'}</Td>
+              <Td>
+                <button
+                  type="button"
+                  disabled={togglingId === link.id}
+                  onClick={() => handleToggle(link.id, 'auto_confirm_assistent')}
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors disabled:opacity-40 ${link.auto_confirm_assistent ? 'bg-success-light text-success' : 'bg-slate-100 text-slate-500'}`}
+                >
+                  {link.auto_confirm_assistent ? 'Aan' : 'Uit'}
+                </button>
+              </Td>
+              <Td>
+                <button
+                  type="button"
+                  disabled={togglingId === link.id}
+                  onClick={() => handleToggle(link.id, 'auto_confirm_apotheek')}
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full transition-colors disabled:opacity-40 ${link.auto_confirm_apotheek ? 'bg-success-light text-success' : 'bg-slate-100 text-slate-500'}`}
+                >
+                  {link.auto_confirm_apotheek ? 'Aan' : 'Uit'}
+                </button>
+              </Td>
               <Td className="text-right">
                 <button
                   type="button"
@@ -370,6 +410,15 @@ function VerbondenApothekenTab({
               <Input id="km_allowance" name="km_allowance" type="number" step="0.0001" min="0" defaultValue={defaultKmRate} />
               <p className="mt-1 text-xs text-text-muted">Standaard: €{defaultKmRate}/km (platforminstelling)</p>
             </div>
+          </div>
+
+          <div className="flex gap-6">
+            <Checkbox id="auto_confirm_assistent" name="auto_confirm_assistent">
+              Auto-bevestigen door assistent
+            </Checkbox>
+            <Checkbox id="auto_confirm_apotheek" name="auto_confirm_apotheek">
+              Auto-goedkeuren door apotheek
+            </Checkbox>
           </div>
 
           {addError && (

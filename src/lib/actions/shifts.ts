@@ -3,17 +3,35 @@
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-type ShiftStatus = 'pending_assistant' | 'confirmed' | 'pending_admin' | 'approved'
+type ShiftStatus = 'pending_assistant' | 'pending_apotheek' | 'approved'
 
-// Valid admin-initiated transitions
 const ALLOWED_TRANSITIONS: Record<ShiftStatus, ShiftStatus[]> = {
-  pending_assistant: ['pending_admin', 'confirmed'],
-  confirmed:         ['pending_admin'],
-  pending_admin:     ['approved', 'pending_assistant'],
-  approved:          ['pending_admin'],
+  pending_assistant: ['pending_apotheek'],
+  pending_apotheek:  ['approved', 'pending_assistant'],
+  approved:          ['pending_apotheek'],
 }
 
 type ActionResult<T = void> = { error: string } | { data: T }
+
+export async function resolveInitialStatus(
+  assistant_id: string,
+  location_id: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+): Promise<ShiftStatus> {
+  const { data: link } = await supabase
+    .from('links')
+    .select('auto_confirm_assistent, auto_confirm_apotheek')
+    .eq('assistant_id', assistant_id)
+    .eq('location_id', location_id)
+    .is('deleted_at', null)
+    .maybeSingle()
+  const autoAss = link?.auto_confirm_assistent ?? false
+  const autoApo = link?.auto_confirm_apotheek  ?? false
+  if (autoAss && autoApo) return 'approved'
+  if (autoAss)            return 'pending_apotheek'
+  return 'pending_assistant'
+}
 
 export async function createShift(data: {
   assistant_id: string
@@ -29,6 +47,8 @@ export async function createShift(data: {
   }
 
   const admin = createAdminClient()
+  const initialStatus = await resolveInitialStatus(data.assistant_id, data.location_id, admin)
+
   const { data: row, error } = await admin
     .from('shifts')
     .insert({
@@ -39,7 +59,7 @@ export async function createShift(data: {
       end_time:      data.end_time,
       break_minutes: data.break_minutes ?? 0,
       notes:         data.notes ?? null,
-      status:        'pending_assistant' as ShiftStatus,
+      status:        initialStatus,
     })
     .select('id')
     .single()
