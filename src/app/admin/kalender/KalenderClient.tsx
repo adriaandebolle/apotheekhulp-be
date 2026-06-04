@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin  from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -48,12 +48,35 @@ export default function KalenderClient({
   const ALL_STATUSES = ['approved', 'pending_admin', 'confirmed', 'pending_assistant', 'denied'] as const
   type Status = typeof ALL_STATUSES[number]
 
-  const [visibleIds, setVisibleIds] = useState<Set<string>>(
-    new Set(assistants.map(a => a.id)),
-  )
-  const [visibleStatuses, setVisibleStatuses] = useState<Set<Status>>(
-    new Set(ALL_STATUSES),
-  )
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('kalender_visible_assistants') ?? 'null') as string[] | null
+      if (stored) {
+        const valid = stored.filter(id => assistants.some(a => a.id === id))
+        if (valid.length) return new Set(valid)
+      }
+    } catch {}
+    return new Set(assistants.map(a => a.id))
+  })
+
+  const [visibleStatuses, setVisibleStatuses] = useState<Set<Status>>(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('kalender_visible_statuses') ?? 'null') as Status[] | null
+      if (stored) {
+        const valid = stored.filter((s): s is Status => (ALL_STATUSES as readonly string[]).includes(s))
+        if (valid.length) return new Set(valid)
+      }
+    } catch {}
+    return new Set(ALL_STATUSES)
+  })
+
+  useEffect(() => {
+    localStorage.setItem('kalender_visible_assistants', JSON.stringify([...visibleIds]))
+  }, [visibleIds])
+
+  useEffect(() => {
+    localStorage.setItem('kalender_visible_statuses', JSON.stringify([...visibleStatuses]))
+  }, [visibleStatuses])
   const [addDate, setAddDate]     = useState<string | null>(null)
   const [editShift, setEditShift] = useState<ShiftData | null>(null)
 
