@@ -1,7 +1,7 @@
 # Apotheekhulp — WBS & Urenraming
 
-**Versie:** 2.3  
-**Datum:** 31 mei 2026  
+**Versie:** 3.0  
+**Datum:** 4 juni 2026  
 **Uurtarief:** €90/uur  
 **Aanpak:** Vibe coding — bestaande HTML als blueprint, data model 100% gekend
 
@@ -9,31 +9,33 @@
 
 ## Samenvatting
 
-| Fase | Omschrijving | Uren |
-|------|-------------|------|
-| 0 | Meetings & Analyse | 4 |
-| 1 | Fundament & Auth | 5 |
-| 2 | Design System | 3 |
-| 3 | Data model & API | 5 |
-| 4 | Dashboard | 4 |
-| 5 | Kalender & Planning | 4 |
-| 6 | Gebruikersbeheer | 5 |
-| 7 | Prestaties Workflow | 6 |
-| 8 | Maandelijkse PDF-berekening | 4 |
-| 9 | Berichten & E-mail | 4 |
-| 10 | Publieke website | 3 |
-| 11 | Assistent portaal | 5 |
-| 12 | Apotheek portaal | 3 |
-| 13 | Migratie & deployment | 6 |
+| Fase | Omschrijving | Uren | Status |
+|------|-------------|------|--------|
+| 0 | Meetings & Analyse | 4 | ✅ Afgerond |
+| 1 | Fundament & Auth | 5 | ✅ Afgerond |
+| 2 | Design System | 3 | ✅ Afgerond |
+| 3 | Data model & API | 5 | ✅ Afgerond |
+| 4 | Gebruikersbeheer | 5 | |
+| 5 | Kalender & Planning | 4 | |
+| 6 | Prestaties Workflow | 6 | |
+| 7 | Dashboard | 4 | |
+| 8 | Maandelijkse PDF-berekening | 4 | |
+| 9 | Berichten & E-mail | 4 | |
+| 10 | Publieke website | 1 | ✅ Pagina's afgerond — enkel contactformulier e-mail resterend |
+| 11 | Assistent portaal | 5 | |
+| 12 | Apotheek portaal | 3 | |
+| 13 | Migratie & deployment | 6 | |
 
 
-| | **Totaal** | **61** |
+| | **Totaal** | **59** | |
 
-**Budget: 61u × €90 = €5.490 excl. BTW (€6.643 incl. BTW)**
+**Budget: 59u × €90 = €5.310 excl. BTW (€6.425 incl. BTW)**
+
+> Vergeleken met v2.3: −2u. Fase 10 verlaagd van 3u naar 1u (pagina's reeds gebouwd als neveneffect van Fase 2).
 
 ---
 
-## Fase 0 — Meetings & Analyse (4u)
+## Fase 0 — Meetings & Analyse (4u) ✅
 
 | # | Taak | Uren |
 |---|------|------|
@@ -44,7 +46,7 @@
 
 ---
 
-## Fase 1 — Fundament & Auth (5u)
+## Fase 1 — Fundament & Auth (5u) ✅
 
 | # | Taak | Uren |
 |---|------|------|
@@ -54,7 +56,7 @@
 
 ---
 
-## Fase 2 — Design System (3u)
+## Fase 2 — Design System (3u) ✅
 
 Bestaande HTML/CSS van live site als basis. Tokens en componenten overnemen, niet herontwerpen.
 
@@ -67,25 +69,30 @@ Bestaande HTML/CSS van live site als basis. Tokens en componenten overnemen, nie
 
 ---
 
-## Fase 3 — Data Model & API (5u)
+## Fase 3 — Data Model & API (5u) ✅
 
 Schema volledig gekend vanuit audit. **Alle tabel- en veldnamen in het Engels** (bv. `pharmacy`, `assistant`, `shift`, `hourly_rate_assistant`).
 
 | # | Taak | Uren |
 |---|------|------|
 | 3.1 | DB schema + migraties (users, assistant_profiles, pharmacy_profiles, locations, links, shifts, messages) | 2 |
-| 3.2 | CRUD server actions / API routes voor alle entiteiten | 3 |
+| 3.2 | CRUD server actions voor alle entiteiten | 3 |
 | | **Subtotaal** | **5** |
 
 ---
 
-## Fase 4 — Dashboard (4u)
+## Fase 4 — Gebruikersbeheer (5u)
+
+Rechttoe rechtaan CRUD — formuliervelden volledig gekend vanuit audit. Lijstpagina's voor assistenten en apotheken zijn reeds gebouwd (neveneffect van Fase 3).
 
 | # | Taak | Uren |
 |---|------|------|
-| 4.1 | KPI-kaarten (8 stuks) + DB queries | 2 |
-| 4.2 | Grafieken: omzet/kost per maand, shifts per maand, status donut | 2 |
-| | **Subtotaal** | **4** |
+| 4.1 | Assistent aanmaken (nieuw-pagina) | 0.5 |
+| 4.2 | Assistent detail: Persoonsgegevens, Bedrijfsgegevens, Wachtwoord | 1 |
+| 4.3 | Assistent detail: Verbonden Apotheken (koppelingstabel, dual pricing, kaskade) | 1.5 |
+| 4.4 | Apotheek aanmaken (nieuw-pagina) | 0.5 |
+| 4.5 | Apotheek detail: Persoonsgegevens, Bedrijfsgegevens, Locaties | 1.5 |
+| | **Subtotaal** | **5** |
 
 ---
 
@@ -101,30 +108,27 @@ Schema volledig gekend vanuit audit. **Alle tabel- en veldnamen in het Engels** 
 
 ---
 
-## Fase 6 — Gebruikersbeheer (5u)
-
-Rechttoe rechtaan CRUD — formuliervelden volledig gekend vanuit audit.
+## Fase 6 — Prestaties Workflow (6u)
 
 | # | Taak | Uren |
 |---|------|------|
-| 6.1 | Assistenten overzicht (actief/inactief, zoeken) + aanmaken | 1 |
-| 6.2 | Assistent detail: Persoonsgegevens, Bedrijfsgegevens, Wachtwoord | 1 |
-| 6.3 | Assistent detail: Verbonden Apotheken (koppelingstabel, dual pricing, kaskade) | 1.5 |
-| 6.4 | Apotheken overzicht + aanmaken | 0.5 |
-| 6.5 | Apotheek detail: Persoonsgegevens, Bedrijfsgegevens, Locaties | 1 |
-| | **Subtotaal** | **5** |
+| 6.1 | Statusmachine shifts (pending_assistant → confirmed → pending_admin → approved) | 1 |
+| 6.2 | Sectie 1 & 2: te bevestigen door assistent / te goedkeuren door beheerder | 2 |
+| 6.3 | Sectie 3 & 4: goedgekeurd met bedragen + selectie voor PDF-generatie | 2 |
+| 6.4 | Bulk shifts aanmaken (multi-date formulier) | 1 |
+| | **Subtotaal** | **6** |
 
 ---
 
-## Fase 7 — Prestaties Workflow (6u)
+## Fase 7 — Dashboard (4u)
+
+Zinvol pas na Fase 4–6: KPI's en grafieken vereisen echte shifts en gebruikers.
 
 | # | Taak | Uren |
 |---|------|------|
-| 7.1 | Statusmachine shifts (pending_assistant → confirmed → pending_admin → approved) | 1 |
-| 7.2 | Sectie 1 & 2: te bevestigen door assistent / te goedkeuren door beheerder | 2 |
-| 7.3 | Sectie 3 & 4: goedgekeurd met bedragen + selectie voor PDF-generatie | 2 |
-| 7.4 | Bulk shifts aanmaken (multi-date formulier) | 1 |
-| | **Subtotaal** | **6** |
+| 7.1 | KPI-kaarten (8 stuks) + DB queries | 2 |
+| 7.2 | Grafieken: omzet/kost per maand, shifts per maand, status donut | 2 |
+| | **Subtotaal** | **4** |
 
 ---
 
@@ -152,13 +156,15 @@ Geen factuurbeheersysteem. Enkel maandelijkse berekening van gewerkte uren → P
 
 ---
 
-## Fase 10 — Publieke Website (3u)
+## Fase 10 — Publieke Website (1u)
+
+Pagina's (Home, Over ons, Wat we doen, Contact) zijn reeds gebouwd als neveneffect van Fase 2. Enkel contactformulier e-mail resterend.
 
 | # | Taak | Uren |
 |---|------|------|
-| 10.1 | Bestaande pagina's kopiëren: Home, Over ons, Wat we doen | 2 |
+| 10.1 | ~~Bestaande pagina's kopiëren: Home, Over ons, Wat we doen~~ | ~~2~~ ✅ |
 | 10.2 | Contactformulier → info@apotheekhulp.be | 1 |
-| | **Subtotaal** | **3** |
+| | **Subtotaal** | **1** |
 
 ---
 
@@ -177,7 +183,7 @@ Geen factuurbeheersysteem. Enkel maandelijkse berekening van gewerkte uren → P
 
 ## Fase 12 — Apotheek Portaal (3u)
 
-| # | Taak | Uren |
+| # | Apotheek portaal | Uren |
 |---|------|------|
 | 12.1 | Dashboard + kalender (read-only eigen shifts per locatie) | 1.5 |
 | 12.2 | Prestaties: maandoverzicht per locatie | 1 |
@@ -203,11 +209,11 @@ Testing gebeurt geïntegreerd per onderdeel tijdens de ontwikkeling.
 
 | | Uren | Bedrag |
 |---|---|---|
-| 
-| 
-| **Totaal excl. BTW** | **61u** | **€5.490** |
-| BTW 21% | | €1.153 |
-| **Totaal incl. BTW** | | **€6.643** |
+| Reeds uitgevoerd (fase 0–3 + fase 10 pagina's) | ~20u | ~€1.800 |
+| Resterend (fase 4–13) | ~39u | ~€3.510 |
+| **Totaal excl. BTW** | **59u** | **€5.310** |
+| BTW 21% | | €1.115 |
+| **Totaal incl. BTW** | | **€6.425** |
 
 ---
 
@@ -215,24 +221,22 @@ Testing gebeurt geïntegreerd per onderdeel tijdens de ontwikkeling.
 
 | Mijlpaal | % | Bedrag excl. BTW |
 |---|---|---|
-| Opstart | 25% | €1.305 |
-| Fase 1–7 (fundament + kalender + gebruikersbeheer + workflow) | 40% | €2.088 |
-| Fase 8–13 (PDF + portalen + deployment) | 35% | €1.827 |
+| Opstart | 25% | €1.328 |
+| Fase 4–7 (gebruikersbeheer + kalender + workflow + dashboard) | 40% | €2.124 |
+| Fase 8–13 (PDF + portalen + deployment) | 35% | €1.859 |
 
 ---
 
 ## Planning
 
-Streefdatum: **1 juli 2026** (31 kalenderdagen)
+Streefdatum: **1 juli 2026** (27 resterende kalenderdagen)
 
 | Week | Fases | Focus |
 |------|-------|-------|
-| Week 1 (2–8 jun) | 0 + 1 + 2 + 3 + 4 | Meetings, fundament, design system, dashboard |
-| Week 2 (9–15 jun) | 5 + 6 | Kalender + gebruikersbeheer |
-| Week 3 (16–22 jun) | 7 + 8 + 9 + 10 | Workflow + PDF + berichten + website |
-| Week 4 (23–29 jun) | 11 + 12 + 13 | Assistent portaal + apotheek portaal + deployment |
-
-**~17u/week — comfortabel haalbaar naast andere projecten.**
+| Week 1 (5–8 jun) | 4 | Gebruikersbeheer create/edit formulieren |
+| Week 2 (9–15 jun) | 5 + 6 | Kalender + Prestaties workflow |
+| Week 3 (16–22 jun) | 7 + 8 + 9 | Dashboard + PDF + Berichten |
+| Week 4 (23–29 jun) | 10 + 11 + 12 + 13 | Contact e-mail + Portalen + Deployment |
 
 ---
 
@@ -240,12 +244,13 @@ Streefdatum: **1 juli 2026** (31 kalenderdagen)
 
 | | |
 |---|---|
+| **Volgorde rationale** | Fase 4 (Gebruikersbeheer) eerst: zodra echte assistenten en apotheken bestaan, kunnen shifts worden aangemaakt via de kalender. Dashboard (Fase 7) wordt pas zinvol nadat er echte shift-data is. |
+| **Seed data** | Na Fase 4: korte dev-migratie toevoegen met testshifts en -koppelingen zodat Fase 5 en 7 direct iets tonen. |
 | **DB schema** | Alle tabel- en veldnamen in het Engels (`shift`, `pharmacy`, `assistant`, `hourly_rate_assistant`, …). |
 | **Scope facturatie** | Enkel PDF-generatie per maand. Geen factuurbeheersysteem. Extern boekhoudpakket (Octopus) verwerkt verder. |
-| **Design system** | Overnemen van bestaande HTML/CSS — geen herontwerp. |
 | **Apotheek portaal** | Read-only portaal in v1: kalender, prestaties, tarificaties. Geen beheerfunctionaliteit. |
 | **Niet in raming** | Content Hub: +6u. Drag-and-drop kalender: +4u. Export CSV: +2u. |
 
 ---
 
-*Opgesteld door Adriaan De Bolle (Manengo) — v2.3 op 31 mei 2026*
+*Opgesteld door Adriaan De Bolle (Manengo) — v3.0 op 4 juni 2026*
