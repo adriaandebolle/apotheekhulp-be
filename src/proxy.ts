@@ -52,12 +52,41 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Role-based access
+  // Unauthenticated users can only access public routes
+  const isProtected =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/assistent") ||
+    pathname.startsWith("/apotheek");
+
+  if (!isAuthenticated && isProtected) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Role-based access — redirect wrong-role users to their own section
   if (isAuthenticated) {
+    // Admin with an active impersonation cookie may visit the impersonated role's paths
+    if (role === "admin") {
+      const raw = request.cookies.get("admin_impersonation")?.value;
+      if (raw) {
+        try {
+          const { role: impRole } = JSON.parse(raw);
+          if (
+            (pathname.startsWith("/assistent") && impRole === "assistent") ||
+            (pathname.startsWith("/apotheek")  && impRole === "apotheek")
+          ) {
+            return supabaseResponse;
+          }
+        } catch { /* malformed cookie — fall through to normal checks */ }
+      }
+    }
+
     if (pathname.startsWith("/admin") && role !== "admin") {
       return NextResponse.redirect(new URL(roleHomePath(role), request.url));
     }
     if (pathname.startsWith("/assistent") && role !== "assistent") {
+      return NextResponse.redirect(new URL(roleHomePath(role), request.url));
+    }
+    if (pathname.startsWith("/apotheek") && role !== "apotheek") {
       return NextResponse.redirect(new URL(roleHomePath(role), request.url));
     }
   }
@@ -68,6 +97,7 @@ export async function proxy(request: NextRequest) {
 function roleHomePath(role: string | undefined) {
   if (role === "admin") return "/admin/dashboard";
   if (role === "assistent") return "/assistent/dashboard";
+  if (role === "apotheek") return "/apotheek/dashboard";
   return "/login";
 }
 

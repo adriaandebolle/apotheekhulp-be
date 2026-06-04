@@ -60,7 +60,7 @@ Het platform wordt volledig herbouwd zodat Apotheekhulp bv vanaf dag één volle
 |-----|-----|---------|
 | **Beheerder** | Carolien, Lieselot | Volledig platform |
 | **Assistent** | Freelance apotheekassistenten | Eigen kalender, beschikbaarheid, profiel, maandoverzichten |
-| **Apotheek** | Contactpersoon apotheek | Eigen shifts, maandoverzichten, profiel *(portaal in latere fase)* |
+| **Apotheek** | Contactpersoon apotheek | Eigen kalender, eigen prestaties, tarificaties |
 
 ---
 
@@ -234,6 +234,17 @@ Eigen omgeving voor elke assistent na login:
 
 ---
 
+### 5.14 Apotheek Portaal
+
+Eigen omgeving voor elke apotheek na login:
+
+- Dashboard met komende shifts voor hun locatie(s)
+- Kalender (shifts voor hun locaties, read-only)
+- Prestaties: overzicht shifts per maand per locatie
+- Tarificaties: tariefinformatie gepubliceerd door beheerder
+
+---
+
 ## 6. Verbeteringen t.o.v. Huidig Platform
 
 | Gebied | Verbetering |
@@ -254,7 +265,7 @@ Eigen omgeving voor elke assistent na login:
 - PEPPOL/e-invoicing (handmatig via Octopus)
 - Data-migratie historische shifts en facturen *(nader te bepalen)*
 - Marketing, SEO en analytics
-- Apotheek-portaal frontend *(volgt in latere fase — backend is aanwezig)*
+- Apotheek-portaal: enkel-voor-eigen-shifts read-only weergave (geen beheer)
 - Boekhouding- of ERP-koppeling
 
 ---

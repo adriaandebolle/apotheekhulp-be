@@ -1,5 +1,5 @@
 import { AppLayout } from '@/components/layout/AppLayout'
 
-export default function AssistentLayout({ children }: { children: React.ReactNode }) {
+export default function ApotheekLayout({ children }: { children: React.ReactNode }) {
   return <AppLayout>{children}</AppLayout>
 }

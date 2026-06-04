@@ -15,6 +15,7 @@ export type OtpState =
 function roleRedirect(role: string | undefined): never {
   if (role === 'admin') redirect('/admin/dashboard')
   if (role === 'assistent') redirect('/assistent/dashboard')
+  if (role === 'apotheek') redirect('/apotheek/dashboard')
   redirect('/')
 }
 

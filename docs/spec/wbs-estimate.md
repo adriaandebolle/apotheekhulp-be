@@ -23,13 +23,13 @@
 | 9 | Berichten & E-mail | 4 |
 | 10 | Publieke website | 3 |
 | 11 | Assistent portaal | 5 |
-| 12 | ~~Apotheek portaal~~ *(backend only, geen frontend)* | — |
+| 12 | Apotheek portaal | 3 |
 | 13 | Migratie & deployment | 6 |
 
 
-| | **Totaal** | **58** |
+| | **Totaal** | **61** |
 
-**Budget: 58u × €90 = €5.220 excl. BTW (€6.316 incl. BTW)**
+**Budget: 61u × €90 = €5.490 excl. BTW (€6.643 incl. BTW)**
 
 ---
 
@@ -175,9 +175,14 @@ Geen factuurbeheersysteem. Enkel maandelijkse berekening van gewerkte uren → P
 
 ---
 
-## Fase 12 — Apotheek Portaal *(uitgesloten uit v1)*
+## Fase 12 — Apotheek Portaal (3u)
 
-Apotheek-rol bestaat in de backend (auth, data model, rollen) maar krijgt geen eigen frontend. Apotheken worden beheerd via het admin-portaal. Frontend uitwerking volgt in een latere fase.
+| # | Taak | Uren |
+|---|------|------|
+| 12.1 | Dashboard + kalender (read-only eigen shifts per locatie) | 1.5 |
+| 12.2 | Prestaties: maandoverzicht per locatie | 1 |
+| 12.3 | Tarificaties: tariefinformatie van beheerder | 0.5 |
+| | **Subtotaal** | **3** |
 
 ---
 
@@ -200,9 +205,9 @@ Testing gebeurt geïntegreerd per onderdeel tijdens de ontwikkeling.
 |---|---|---|
 | 
 | 
-| **Totaal excl. BTW** | **58u** | **€5.220** |
-| BTW 21% | | €1.096 |
-| **Totaal incl. BTW** | | **€6.316** |
+| **Totaal excl. BTW** | **61u** | **€5.490** |
+| BTW 21% | | €1.153 |
+| **Totaal incl. BTW** | | **€6.643** |
 
 ---
 
@@ -225,7 +230,7 @@ Streefdatum: **1 juli 2026** (31 kalenderdagen)
 | Week 1 (2–8 jun) | 0 + 1 + 2 + 3 + 4 | Meetings, fundament, design system, dashboard |
 | Week 2 (9–15 jun) | 5 + 6 | Kalender + gebruikersbeheer |
 | Week 3 (16–22 jun) | 7 + 8 + 9 + 10 | Workflow + PDF + berichten + website |
-| Week 4 (23–29 jun) | 11 + 13 | Assistent portaal + deployment |
+| Week 4 (23–29 jun) | 11 + 12 + 13 | Assistent portaal + apotheek portaal + deployment |
 
 **~17u/week — comfortabel haalbaar naast andere projecten.**
 
@@ -238,8 +243,8 @@ Streefdatum: **1 juli 2026** (31 kalenderdagen)
 | **DB schema** | Alle tabel- en veldnamen in het Engels (`shift`, `pharmacy`, `assistant`, `hourly_rate_assistant`, …). |
 | **Scope facturatie** | Enkel PDF-generatie per maand. Geen factuurbeheersysteem. Extern boekhoudpakket (Octopus) verwerkt verder. |
 | **Design system** | Overnemen van bestaande HTML/CSS — geen herontwerp. |
-| **Apotheek portaal** | Geen frontend in v1. Rol en data aanwezig in backend. |
-| **Niet in raming** | Content Hub: +6u. Drag-and-drop kalender: +4u. Export CSV: +2u. Apotheek portaal frontend: +3u. |
+| **Apotheek portaal** | Read-only portaal in v1: kalender, prestaties, tarificaties. Geen beheerfunctionaliteit. |
+| **Niet in raming** | Content Hub: +6u. Drag-and-drop kalender: +4u. Export CSV: +2u. |
 
 ---
 

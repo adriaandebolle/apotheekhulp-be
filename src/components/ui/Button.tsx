@@ -61,6 +61,8 @@ interface ButtonLinkProps extends Omit<LinkProps, 'className'> {
   size?: Size
   fullWidth?: boolean
   children: React.ReactNode
+  title?: string
+  className?: string
 }
 
 export function ButtonLink({
@@ -68,10 +70,11 @@ export function ButtonLink({
   size = 'md',
   fullWidth = false,
   children,
+  className = '',
   ...props
 }: ButtonLinkProps) {
   return (
-    <Link className={`${buttonVariants({ variant, size })} ${fullWidth ? 'w-full' : ''}`} {...props}>
+    <Link className={`${buttonVariants({ variant, size })} ${fullWidth ? 'w-full' : ''} ${className}`} {...props}>
       {children}
     </Link>
   )
