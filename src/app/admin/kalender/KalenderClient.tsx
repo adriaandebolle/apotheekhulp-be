@@ -45,8 +45,14 @@ export default function KalenderClient({
   shifts: ShiftData[]
   pharmacies: PharmacyOption[]
 }) {
+  const ALL_STATUSES = ['approved', 'pending_admin', 'confirmed', 'pending_assistant', 'denied'] as const
+  type Status = typeof ALL_STATUSES[number]
+
   const [visibleIds, setVisibleIds] = useState<Set<string>>(
     new Set(assistants.map(a => a.id)),
+  )
+  const [visibleStatuses, setVisibleStatuses] = useState<Set<Status>>(
+    new Set(ALL_STATUSES),
   )
   const [addDate, setAddDate]     = useState<string | null>(null)
   const [editShift, setEditShift] = useState<ShiftData | null>(null)
@@ -59,6 +65,14 @@ export default function KalenderClient({
     })
   }
 
+  function toggleStatus(s: Status) {
+    setVisibleStatuses(prev => {
+      const next = new Set(prev)
+      next.has(s) ? next.delete(s) : next.add(s)
+      return next
+    })
+  }
+
   function selectAll()  { setVisibleIds(new Set(assistants.map(a => a.id))) }
   function selectNone() { setVisibleIds(new Set()) }
 
@@ -67,7 +81,7 @@ export default function KalenderClient({
   }
 
   const events: EventInput[] = shifts
-    .filter(s => visibleIds.has(s.assistantId))
+    .filter(s => visibleIds.has(s.assistantId) && visibleStatuses.has(s.status as Status))
     .map(s => {
       const opacity  = STATUS_OPACITY[s.status] ?? 0.5
       const bg       = hexWithOpacity(s.color, opacity)
@@ -145,30 +159,35 @@ export default function KalenderClient({
             </ul>
           </div>
 
-          {/* Status legend */}
+          {/* Status filter */}
           <div>
             <p className="text-xs font-semibold text-text uppercase tracking-wide mb-3">Status</p>
-            <ul className="space-y-1.5 text-sm text-text-muted">
-              <li className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#28a745] shrink-0" />
-                Goedgekeurd
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#fd7e14] opacity-75 shrink-0" />
-                In afwachting admin
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#6c757d] opacity-65 shrink-0" />
-                Bevestigd assistent
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#6c757d] opacity-50 shrink-0" />
-                In afwachting assistent
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#dc3545] opacity-35 shrink-0" />
-                Geweigerd
-              </li>
+            <ul className="space-y-1.5">
+              {(
+                [
+                  { status: 'approved'          as Status, label: 'Goedgekeurd',           color: '#28a745', opacity: 1    },
+                  { status: 'pending_admin'      as Status, label: 'In afwachting admin',   color: '#fd7e14', opacity: 0.75 },
+                  { status: 'confirmed'          as Status, label: 'Bevestigd assistent',   color: '#6c757d', opacity: 0.65 },
+                  { status: 'pending_assistant'  as Status, label: 'In afwachting assistent', color: '#6c757d', opacity: 0.5 },
+                  { status: 'denied'             as Status, label: 'Geweigerd',             color: '#dc3545', opacity: 0.35 },
+                ] as const
+              ).map(({ status, label, color, opacity }) => (
+                <li key={status}>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={visibleStatuses.has(status)}
+                      onChange={() => toggleStatus(status)}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <span
+                      className="w-2.5 h-2.5 rounded-sm shrink-0"
+                      style={{ backgroundColor: hexWithOpacity(color, opacity) }}
+                    />
+                    <span className="text-sm text-text">{label}</span>
+                  </label>
+                </li>
+              ))}
             </ul>
           </div>
         </aside>
