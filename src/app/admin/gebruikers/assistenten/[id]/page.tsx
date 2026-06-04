@@ -1,0 +1,57 @@
+import { notFound } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getPlatformConfig } from '@/lib/actions/platform-config'
+import { AssistentDetail } from './AssistentDetail'
+
+type Props = { params: Promise<{ id: string }> }
+
+export default async function AssistentDetailPage({ params }: Props) {
+  const { id } = await params
+  const admin = createAdminClient()
+
+  const [
+    { data: { user: authUser }, error: authError },
+    { data: userRow },
+    { data: assistantProfile },
+    { data: links },
+    { data: pharmacies },
+    config,
+  ] = await Promise.all([
+    admin.auth.admin.getUserById(id),
+    admin.from('users').select('id, first_name, last_name, phone, color, is_active').eq('id', id).single(),
+    admin.from('assistant_profiles').select('vat_number, vat_liable, company_name, street, house_number, postcode, city, iban').eq('user_id', id).maybeSingle(),
+    admin.from('links').select(`
+      id,
+      hourly_rate_assistant,
+      hourly_rate_pharmacy,
+      km_allowance,
+      distance_km,
+      locations ( id, name, pharmacy_id, pharmacy_profiles ( user_id, company_name ) )
+    `).eq('assistant_id', id),
+    admin.from('pharmacy_profiles').select('user_id, company_name, locations ( id, name )').order('company_name'),
+    getPlatformConfig(),
+  ])
+
+  if (authError || !userRow) notFound()
+
+  return (
+    <div className="p-8">
+      <p className="text-xs text-text-muted mb-1">Gebruikers / Assistenten</p>
+      <h1 className="text-2xl font-bold text-text mb-6">
+        {[userRow.first_name, userRow.last_name].filter(Boolean).join(' ') || authUser!.email}
+      </h1>
+
+      <AssistentDetail
+        userId={id}
+        email={authUser!.email ?? ''}
+        user={userRow}
+        assistantProfile={assistantProfile}
+        links={links ?? []}
+        pharmacies={pharmacies ?? []}
+        defaultKmRate={config.km_rate}
+        defaultHourlyRateAssistant={config.default_hourly_rate_assistant}
+        defaultHourlyRatePharmacy={config.default_hourly_rate_pharmacy}
+      />
+    </div>
+  )
+}

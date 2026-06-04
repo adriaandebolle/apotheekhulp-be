@@ -7,7 +7,16 @@ type ActionResult<T = void> = { error: string } | { data: T }
 
 export async function upsertAssistantProfile(
   userId: string,
-  profile: { vat_number?: string; company_name?: string; address?: string; iban?: string },
+  profile: {
+    vat_number?:   string
+    vat_liable?:   boolean
+    company_name?: string
+    street?:       string
+    house_number?: string
+    postcode?:     string
+    city?:         string
+    iban?:         string
+  },
 ): Promise<ActionResult> {
   const admin = createAdminClient()
   const { error } = await admin

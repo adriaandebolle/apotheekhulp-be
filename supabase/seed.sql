@@ -91,6 +91,6 @@ update public.users set phone = '+32 9 987 65 43'
   where id = '66666666-6666-6666-6666-666666666666';
 
 -- ── Pharmacy profiles ─────────────────────────────────────────────────────────
-insert into public.pharmacy_profiles (user_id, company_name, vat_number, billing_address) values
-  ('22222222-2222-2222-2222-222222222222', 'Apotheek Centrum',     'BE 0123.456.789', 'Grote Markt 1, 9000 Gent'),
-  ('66666666-6666-6666-6666-666666666666', 'De Groene Apotheek',   'BE 0987.654.321', 'Stationstraat 12, 2000 Antwerpen');
+insert into public.pharmacy_profiles (user_id, company_name, vat_number, billing_street, billing_house_number, billing_postcode, billing_city) values
+  ('22222222-2222-2222-2222-222222222222', 'Apotheek Centrum',   'BE 0123.456.789', 'Grote Markt',    '1',  '9000', 'Gent'),
+  ('66666666-6666-6666-6666-666666666666', 'De Groene Apotheek', 'BE 0987.654.321', 'Stationstraat', '12', '2000', 'Antwerpen');

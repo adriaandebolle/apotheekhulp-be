@@ -7,7 +7,15 @@ type ActionResult<T = void> = { error: string } | { data: T }
 
 export async function upsertPharmacyProfile(
   userId: string,
-  profile: { vat_number?: string; company_name?: string; billing_address?: string },
+  profile: {
+    vat_number?:            string
+    vat_liable?:            boolean
+    company_name?:          string
+    billing_street?:        string
+    billing_house_number?:  string
+    billing_postcode?:      string
+    billing_city?:          string
+  },
 ): Promise<ActionResult> {
   const admin = createAdminClient()
   const { error } = await admin
