@@ -10,6 +10,7 @@ import { updateUserProfile, adminChangePassword } from '@/lib/actions/users'
 import { upsertPharmacyProfile } from '@/lib/actions/pharmacy-profiles'
 import { createLocation, updateLocation, deleteLocation } from '@/lib/actions/locations'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
+import { Modal } from '@/components/ui/Modal'
 
 // ─── Single-field address autocomplete ───────────────────────────────────────
 
@@ -36,7 +37,17 @@ function formatAddress(a: NominatimResult['address']): string {
   return [street, place].filter(Boolean).join(', ')
 }
 
-function AddressInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+function AddressInput({
+  value,
+  onChange,
+  onAddressSelect,
+  placeholder = 'Typ naam of adres om te zoeken…',
+}: {
+  value: string
+  onChange: (v: string) => void
+  onAddressSelect: (formatted: string) => void
+  placeholder?: string
+}) {
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [open, setOpen]               = useState(false)
   const [loading, setLoading]         = useState(false)
@@ -76,7 +87,7 @@ function AddressInput({ value, onChange }: { value: string; onChange: (v: string
           type="text"
           value={value}
           onChange={e => onChange(e.target.value)}
-          placeholder="Typ adres om te zoeken…"
+          placeholder={placeholder}
           autoComplete="off"
           className={inputBase}
         />
@@ -95,7 +106,7 @@ function AddressInput({ value, onChange }: { value: string; onChange: (v: string
             <li key={s.place_id}>
               <button
                 type="button"
-                onClick={() => { onChange(formatAddress(s.address)); setOpen(false) }}
+                onClick={() => { onAddressSelect(formatAddress(s.address)); setOpen(false) }}
                 className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary-light hover:text-primary transition-colors leading-snug"
               >
                 {s.display_name}
@@ -282,8 +293,10 @@ function LocatiesTab({ pharmacyId, initialLocations }: { pharmacyId: string; ini
   const [formAddress, setFormAddress] = useState('')
   const [formError, setFormError]     = useState<string>()
   const [isPendingForm, startForm]    = useTransition()
-  const [togglingId, setTogglingId]   = useState<string>()
-  const [deletingId, setDeletingId]   = useState<string>()
+  const [togglingId, setTogglingId]     = useState<string>()
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleting, setIsDeleting]     = useState(false)
+  const [deleteError, setDeleteError]   = useState<string>()
 
   function openAdd() {
     setFormMode('add')
@@ -356,17 +369,20 @@ function LocatiesTab({ pharmacyId, initialLocations }: { pharmacyId: string; ini
     setTogglingId(undefined)
   }
 
-  async function handleDelete(locId: string) {
-    if (!confirm('Locatie verwijderen? Dit kan niet ongedaan gemaakt worden.')) return
-    setDeletingId(locId)
-    const result = await deleteLocation(locId)
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setIsDeleting(true)
+    setDeleteError(undefined)
+    const result = await deleteLocation(deleteTarget.id)
     if ('error' in result) {
-      alert(result.error)
+      setDeleteError(result.error)
+      setIsDeleting(false)
     } else {
-      setLocations(prev => prev.filter(l => l.id !== locId))
-      if (editingId === locId) openAdd()
+      setLocations(prev => prev.filter(l => l.id !== deleteTarget.id))
+      if (editingId === deleteTarget.id) openAdd()
+      setDeleteTarget(null)
+      setIsDeleting(false)
     }
-    setDeletingId(undefined)
   }
 
   return (
@@ -410,9 +426,8 @@ function LocatiesTab({ pharmacyId, initialLocations }: { pharmacyId: string; ini
                   </button>
                   <button
                     type="button"
-                    disabled={deletingId === loc.id}
-                    onClick={() => handleDelete(loc.id)}
-                    className="text-xs text-danger hover:underline disabled:opacity-40"
+                    onClick={() => { setDeleteTarget({ id: loc.id, name: loc.name }); setDeleteError(undefined) }}
+                    className="text-xs text-danger hover:underline"
                   >
                     Verwijderen
                   </button>
@@ -432,17 +447,21 @@ function LocatiesTab({ pharmacyId, initialLocations }: { pharmacyId: string; ini
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="loc_name" required>Naam</Label>
-              <Input
-                id="loc_name"
+              <AddressInput
                 value={formName}
-                onChange={e => setFormName(e.target.value)}
-                required
+                onChange={setFormName}
+                onAddressSelect={setFormAddress}
                 placeholder="Hoofdvestiging"
               />
             </div>
             <div>
               <Label htmlFor="loc_address">Adres</Label>
-              <AddressInput value={formAddress} onChange={setFormAddress} />
+              <Input
+                id="loc_address"
+                value={formAddress}
+                onChange={e => setFormAddress(e.target.value)}
+                placeholder="Straat 1, 9000 Gent"
+              />
             </div>
           </div>
 
@@ -466,6 +485,38 @@ function LocatiesTab({ pharmacyId, initialLocations }: { pharmacyId: string; ini
           </div>
         </form>
       </div>
+
+      <Modal
+        open={deleteTarget !== null}
+        onClose={() => !isDeleting && setDeleteTarget(null)}
+        title="Locatie verwijderen"
+        size="sm"
+      >
+        <p className="text-sm text-text">
+          Weet je zeker dat je <strong>{deleteTarget?.name}</strong> wilt verwijderen?
+          Dit kan niet ongedaan gemaakt worden.
+        </p>
+
+        {deleteError && (
+          <p className="mt-3 text-sm text-danger bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            {deleteError}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            type="button"
+            disabled={isDeleting}
+            onClick={() => setDeleteTarget(null)}
+            className="px-4 py-2 text-sm font-medium text-text-muted hover:text-text transition-colors disabled:opacity-40"
+          >
+            Annuleren
+          </button>
+          <Button variant="danger" size="sm" loading={isDeleting} onClick={confirmDelete}>
+            Verwijderen
+          </Button>
+        </div>
+      </Modal>
     </div>
   )
 }
