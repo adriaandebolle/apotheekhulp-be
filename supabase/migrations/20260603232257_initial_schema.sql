@@ -267,3 +267,24 @@ create policy "admins can manage platform config"
 create policy "authenticated can read platform config"
   on public.platform_config for select
   using (auth.uid() is not null);
+
+-- ============================================================
+-- assistant_availability
+-- ============================================================
+create table public.assistant_availability (
+  id            uuid        primary key default gen_random_uuid(),
+  assistant_id  uuid        not null references public.users(id) on delete cascade,
+  day_of_week   smallint    not null check (day_of_week between 0 and 6), -- 0 = Mon … 6 = Sun
+  created_at    timestamptz not null default now(),
+  unique(assistant_id, day_of_week)
+);
+
+alter table public.assistant_availability enable row level security;
+
+create policy "admins can manage availability"
+  on public.assistant_availability for all
+  using ((select role from public.users where id = auth.uid()) = 'admin');
+
+create policy "assistants can manage own availability"
+  on public.assistant_availability for all
+  using (assistant_id = auth.uid());

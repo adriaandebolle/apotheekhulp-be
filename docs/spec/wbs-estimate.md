@@ -1,7 +1,7 @@
 # Apotheekhulp — WBS & Urenraming
 
-**Versie:** 3.0  
-**Datum:** 4 juni 2026  
+**Versie:** 3.1  
+**Datum:** 5 juni 2026  
 **Uurtarief:** €90/uur  
 **Aanpak:** Vibe coding — bestaande HTML als blueprint, data model 100% gekend
 
@@ -18,7 +18,7 @@
 | 4 | Gebruikersbeheer | 5 | ✅ Afgerond |
 | 5 | Kalender & Planning | 4 | ✅ Afgerond |
 | 6 | Prestaties Workflow | 6 | ✅ Afgerond |
-| 7 | Dashboard | 4 | |
+| 7 | Dashboard | 4 | ✅ Afgerond |
 | 8 | Maandelijkse PDF-berekening | 4 | |
 | 9 | Berichten & E-mail | 4 | |
 | 10 | Publieke website | 1 | ✅ Pagina's afgerond — enkel contactformulier e-mail resterend |
@@ -81,7 +81,7 @@ Schema volledig gekend vanuit audit. **Alle tabel- en veldnamen in het Engels** 
 
 ---
 
-## Fase 4 — Gebruikersbeheer (5u)
+## Fase 4 — Gebruikersbeheer (5u) ✅
 
 Rechttoe rechtaan CRUD — formuliervelden volledig gekend vanuit audit. Lijstpagina's voor assistenten en apotheken zijn reeds gebouwd (neveneffect van Fase 3).
 
@@ -96,19 +96,19 @@ Rechttoe rechtaan CRUD — formuliervelden volledig gekend vanuit audit. Lijstpa
 
 ---
 
-## Fase 5 — Kalender & Planning (4u)
+## Fase 5 — Kalender & Planning (4u) 🟡
 
 | # | Taak | Uren |
 |---|------|------|
-| 5.1 | Kalender (FullCalendar): maand/week/dag/lijst, kleurcodering per assistent, filter sidebar | 2 |
-| 5.2 | Modal shift aanmaken (assistent → apotheek → locatie kaskade, datum/uren/pauze) | 1 |
-| 5.3 | Modal shift bewerken / goedkeuren / weigeren / verwijderen | 0.5 |
-| 5.4 | Beschikbaarheid weekraster (alle assistenten × 7 dagen) | 0.5 |
+| 5.1 | ~~Kalender (FullCalendar): maand/week/dag/lijst, kleurcodering per assistent, filter sidebar~~ | ~~2~~ ✅ |
+| 5.2 | ~~Modal shift aanmaken (assistent → apotheek → locatie kaskade, datum/uren/pauze)~~ | ~~1~~ ✅ |
+| 5.3 | ~~Modal shift bewerken / goedkeuren / weigeren / verwijderen~~ | ~~0.5~~ ✅ |
+| 5.4 | ~~Beschikbaarheid weekraster (alle assistenten × 7 dagen)~~ | ~~0.5~~ ✅ |
 | | **Subtotaal** | **4** |
 
 ---
 
-## Fase 6 — Prestaties Workflow (6u)
+## Fase 6 — Prestaties Workflow (6u) ✅
 
 | # | Taak | Uren |
 |---|------|------|
@@ -126,8 +126,8 @@ Zinvol pas na Fase 4–6: KPI's en grafieken vereisen echte shifts en gebruikers
 
 | # | Taak | Uren |
 |---|------|------|
-| 7.1 | KPI-kaarten (8 stuks) + DB queries | 2 |
-| 7.2 | Grafieken: omzet/kost per maand, shifts per maand, status donut | 2 |
+| 7.1 | ~~KPI-kaarten (8 stuks) + DB queries~~ | ~~2~~ ✅ |
+| 7.2 | ~~Grafieken: omzet/kost per maand, shifts per maand, status donut~~ | ~~2~~ ✅ |
 | | **Subtotaal** | **4** |
 
 ---
@@ -210,8 +210,8 @@ Testing gebeurt geïntegreerd per onderdeel tijdens de ontwikkeling.
 
 | | Uren | Bedrag |
 |---|---|---|
-| Reeds uitgevoerd (fase 0–6 + fase 10 pagina's) | ~32u | ~€2.880 |
-| Resterend (fase 7–13) | ~27u | ~€2.430 |
+| Reeds uitgevoerd (fase 0–7 + fase 10 pagina's) | ~35.5u | ~€3.195 |
+| Resterend (fase 8–13) | ~23.5u | ~€2.115 |
 | **Totaal excl. BTW** | **59u** | **€5.310** |
 | BTW 21% | | €1.115 |
 | **Totaal incl. BTW** | | **€6.425** |
@@ -234,10 +234,11 @@ Streefdatum: **1 juli 2026** (27 resterende kalenderdagen)
 
 | Week | Fases | Focus |
 |------|-------|-------|
-| Week 1 (5–8 jun) | 4 | Gebruikersbeheer create/edit formulieren |
-| Week 2 (9–15 jun) | 7 + 8 | Dashboard + PDF-berekening |
-| Week 3 (16–22 jun) | 9 + 11 | Berichten + Assistent portaal |
-| Week 4 (23–29 jun) | 10 + 12 + 13 | Contact e-mail + Apotheek portaal + Deployment |
+| ~~Week 1 (5–8 jun)~~ | ~~4~~ | ~~Gebruikersbeheer~~ ✅ afgerond (incl. fase 5 + 6) |
+| ~~Week 2 (9–15 jun)~~ | ~~7 + 5.4~~ | ~~Dashboard + Beschikbaarheid weekraster~~ ✅ afgerond |
+| Week 3 (16–22 jun) | 8 + 9 | PDF-berekening + Berichten & E-mail |
+| Week 4 (23–29 jun) | 11 + 12 | Assistent portaal + Apotheek portaal |
+| Week 5 (30 jun) | 10.2 + 13 | Contact e-mail + Deployment |
 
 ---
 
@@ -254,4 +255,4 @@ Streefdatum: **1 juli 2026** (27 resterende kalenderdagen)
 
 ---
 
-*Opgesteld door Adriaan De Bolle (Manengo) — v3.0 op 4 juni 2026*
+*Opgesteld door Adriaan De Bolle (Manengo) — v3.1 op 5 juni 2026*
