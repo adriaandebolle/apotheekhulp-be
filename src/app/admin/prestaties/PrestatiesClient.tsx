@@ -354,12 +354,18 @@ export default function PrestatiesClient({
                 {' '} / Apotheek: <strong>{fmtMoney(totalCostApo)}</strong>
               </span>
               <div className="flex gap-2">
-                <Button size="sm" variant="secondary" disabled title="Beschikbaar in fase 8">
-                  PDF assistent
-                </Button>
-                <Button size="sm" variant="secondary" disabled title="Beschikbaar in fase 8">
-                  PDF apotheek
-                </Button>
+                <a
+                  href={`/admin/facturen/assistenten?month=${section3.month}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary-light transition-colors"
+                >
+                  PDF assistenten
+                </a>
+                <a
+                  href={`/admin/facturen/apotheken?month=${section3.month}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary border border-primary rounded-md hover:bg-primary-light transition-colors"
+                >
+                  PDF apotheken
+                </a>
               </div>
             </div>
           )}
@@ -417,9 +423,19 @@ export default function PrestatiesClient({
                       </Td>
                       <Td>{fmtHours(hours)}</Td>
                       <Td className={noRateAss ? 'text-warning' : ''}>{fmtMoney(rateAss)}/u{noRateAss ? '*' : ''}</Td>
-                      <Td className="font-medium">{fmtMoney(hours * rateAss)}</Td>
+                      <Td>
+                        <span className="font-medium">{fmtMoney(hours * rateAss)}</span>
+                        {s.assistentInvoiceId && (
+                          <span className="ml-1.5 text-xs text-success font-medium">✓</span>
+                        )}
+                      </Td>
                       <Td className={noRateApo ? 'text-warning' : ''}>{fmtMoney(rateApo)}/u{noRateApo ? '*' : ''}</Td>
-                      <Td className="font-medium">{fmtMoney(hours * rateApo)}</Td>
+                      <Td>
+                        <span className="font-medium">{fmtMoney(hours * rateApo)}</span>
+                        {s.apotheekInvoiceId && (
+                          <span className="ml-1.5 text-xs text-success font-medium">✓</span>
+                        )}
+                      </Td>
                     </Tr>
                   )
                 })

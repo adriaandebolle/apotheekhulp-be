@@ -52,16 +52,18 @@ create policy "admins can update any user"
 -- assistant_profiles
 -- ============================================================
 create table public.assistant_profiles (
-  user_id      uuid    primary key references public.users(id) on delete cascade,
-  vat_number   text,
-  vat_liable   boolean not null default false,
-  company_name text,
-  street       text,
-  house_number text,
-  postcode     text,
-  city         text,
-  iban         text,
-  updated_at   timestamptz not null default now()
+  user_id             uuid    primary key references public.users(id) on delete cascade,
+  vat_number          text,
+  vat_liable          boolean not null default false,
+  company_name        text,
+  street              text,
+  house_number        text,
+  postcode            text,
+  city                text,
+  iban                text,
+  invoice_prefix      text,
+  invoice_next_number integer not null default 1,
+  updated_at          timestamptz not null default now()
 );
 
 alter table public.assistant_profiles enable row level security;
@@ -253,6 +255,14 @@ create table public.platform_config (
   vat_rate                     numeric(5,2) not null default 21.00,
   default_hourly_rate_assistant numeric(8,2) not null default 0.00,
   default_hourly_rate_pharmacy  numeric(8,2) not null default 0.00,
+  invoice_prefix               text         not null default '2026',
+  invoice_next_number          integer      not null default 1,
+  company_name                 text         not null default 'Apotheekhulp',
+  company_street               text         not null default 'Wanzelesteenweg 98',
+  company_city                 text         not null default '9260 Serskamp',
+  company_phone                text         not null default '0494/99.61.82',
+  company_email                text         not null default 'info@apotheekhulp.be',
+  company_vat                  text         not null default 'BE1010.352.295',
   updated_at                   timestamptz  not null default now()
 );
 
@@ -288,3 +298,37 @@ create policy "admins can manage availability"
 create policy "assistants can manage own availability"
   on public.assistant_availability for all
   using (assistant_id = auth.uid());
+
+
+-- ============================================================
+-- invoices
+-- ============================================================
+create table public.invoices (
+  id             uuid          primary key default gen_random_uuid(),
+  invoice_number text          not null,
+  invoice_date   date          not null,
+  type           text          not null check (type in ('assistent', 'apotheek')),
+  recipient_id   uuid          not null references public.users(id),
+  status         text          not null default 'te_betalen'
+                               check (status in ('te_betalen', 'betaald')),
+  subtotal       numeric(10,2) not null,
+  vat_amount     numeric(10,2) not null,
+  total          numeric(10,2) not null,
+  notes          text,
+  created_at     timestamptz   not null default now(),
+  updated_at     timestamptz   not null default now()
+);
+
+alter table public.shifts
+  add column assistent_invoice_id uuid references public.invoices(id) on delete set null,
+  add column apotheek_invoice_id  uuid references public.invoices(id) on delete set null;
+
+alter table public.invoices enable row level security;
+
+create policy "admins can manage invoices"
+  on public.invoices for all
+  using ((select role from public.users where id = auth.uid()) = 'admin');
+
+create policy "assistent can read own invoices"
+  on public.invoices for select
+  using (type = 'assistent' and recipient_id = auth.uid());

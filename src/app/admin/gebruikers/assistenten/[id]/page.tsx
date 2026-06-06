@@ -19,7 +19,7 @@ export default async function AssistentDetailPage({ params }: Props) {
   ] = await Promise.all([
     admin.auth.admin.getUserById(id),
     admin.from('users').select('id, first_name, last_name, phone, color, is_active').eq('id', id).single(),
-    admin.from('assistant_profiles').select('vat_number, vat_liable, company_name, street, house_number, postcode, city, iban').eq('user_id', id).maybeSingle(),
+    admin.from('assistant_profiles').select('vat_number, vat_liable, company_name, street, house_number, postcode, city, iban, invoice_prefix, invoice_next_number').eq('user_id', id).maybeSingle(),
     admin.from('links').select(`
       id,
       hourly_rate_assistant,

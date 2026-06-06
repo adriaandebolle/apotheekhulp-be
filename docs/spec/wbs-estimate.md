@@ -19,7 +19,7 @@
 | 5 | Kalender & Planning | 4 | ✅ Afgerond |
 | 6 | Prestaties Workflow | 6 | ✅ Afgerond |
 | 7 | Dashboard | 4 | ✅ Afgerond |
-| 8 | Maandelijkse PDF-berekening | 4 | |
+| 8 | Maandelijkse PDF-berekening + Factuurbeheersysteem | 4 | ✅ Afgerond |
 | 9 | Berichten & E-mail | 4 | |
 | 10 | Publieke website | 1 | ✅ Pagina's afgerond — enkel contactformulier e-mail resterend |
 | 11 | Assistent portaal | 5 | |

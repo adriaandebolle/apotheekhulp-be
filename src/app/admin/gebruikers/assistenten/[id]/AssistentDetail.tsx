@@ -24,14 +24,16 @@ type UserRow = {
 }
 
 type AssistantProfileRow = {
-  vat_number:   string | null
-  vat_liable:   boolean
-  company_name: string | null
-  street:       string | null
-  house_number: string | null
-  postcode:     string | null
-  city:         string | null
-  iban:         string | null
+  vat_number:          string | null
+  vat_liable:          boolean
+  company_name:        string | null
+  street:              string | null
+  house_number:        string | null
+  postcode:            string | null
+  city:                string | null
+  iban:                string | null
+  invoice_prefix:      string | null
+  invoice_next_number: number
 } | null
 
 type LinkRow = {
@@ -152,25 +154,34 @@ function BedrijfsgegevensTab({ userId, profile }: { userId: string; profile: Ass
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ error?: string; success?: string }>({})
 
+  const [invoicePrefix, setInvoicePrefix] = useState(profile?.invoice_prefix ?? '')
+  const [invoiceNext,   setInvoiceNext]   = useState(profile?.invoice_next_number ?? 1)
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     setFeedback({})
     startTransition(async () => {
       const result = await upsertAssistantProfile(userId, {
-        vat_number:   (fd.get('vat_number')   as string).trim() || undefined,
-        vat_liable:   fd.has('vat_liable'),
-        company_name: (fd.get('company_name') as string).trim() || undefined,
-        street:       (fd.get('street')       as string).trim() || undefined,
-        house_number: (fd.get('house_number') as string).trim() || undefined,
-        postcode:     (fd.get('postcode')     as string).trim() || undefined,
-        city:         (fd.get('city')         as string).trim() || undefined,
-        iban:         (fd.get('iban')         as string).trim() || undefined,
+        vat_number:          (fd.get('vat_number')   as string).trim() || undefined,
+        vat_liable:          fd.has('vat_liable'),
+        company_name:        (fd.get('company_name') as string).trim() || undefined,
+        street:              (fd.get('street')       as string).trim() || undefined,
+        house_number:        (fd.get('house_number') as string).trim() || undefined,
+        postcode:            (fd.get('postcode')     as string).trim() || undefined,
+        city:                (fd.get('city')         as string).trim() || undefined,
+        iban:                (fd.get('iban')         as string).trim() || undefined,
+        invoice_prefix:      (fd.get('invoice_prefix') as string).trim() || undefined,
+        invoice_next_number: parseInt(fd.get('invoice_next_number') as string, 10) || 1,
       })
       if ('error' in result) setFeedback({ error: result.error })
       else setFeedback({ success: 'Bedrijfsgegevens opgeslagen.' })
     })
   }
+
+  const invoicePreview = invoicePrefix
+    ? `${invoicePrefix}-${String(invoiceNext).padStart(3, '0')}`
+    : null
 
   return (
     <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
@@ -202,6 +213,38 @@ function BedrijfsgegevensTab({ userId, profile }: { userId: string; profile: Ass
       <div>
         <Label htmlFor="iban">Rekeningnummer (IBAN)</Label>
         <Input id="iban" name="iban" placeholder="BE00 0000 0000 0000" defaultValue={profile?.iban ?? ''} />
+      </div>
+
+      <div className="border-t border-border pt-4 space-y-3">
+        <p className="text-xs font-semibold text-text-muted uppercase tracking-wide">Factuurnummering</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="invoice_prefix">Voorvoegsel</Label>
+            <Input
+              id="invoice_prefix"
+              name="invoice_prefix"
+              placeholder="Bijv. 2026"
+              value={invoicePrefix}
+              onChange={e => setInvoicePrefix(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="invoice_next_number">Volgend nummer</Label>
+            <Input
+              id="invoice_next_number"
+              name="invoice_next_number"
+              type="number"
+              min="1"
+              value={invoiceNext}
+              onChange={e => setInvoiceNext(parseInt(e.target.value, 10) || 1)}
+            />
+          </div>
+        </div>
+        {invoicePreview && (
+          <p className="text-xs text-text-muted">
+            Volgende factuur: <span className="font-mono font-semibold text-text">{invoicePreview}</span>
+          </p>
+        )}
       </div>
 
       <Feedback {...feedback} />
@@ -413,12 +456,8 @@ function VerbondenApothekenTab({
           </div>
 
           <div className="flex gap-6">
-            <Checkbox id="auto_confirm_assistent" name="auto_confirm_assistent">
-              Auto-bevestigen door assistent
-            </Checkbox>
-            <Checkbox id="auto_confirm_apotheek" name="auto_confirm_apotheek">
-              Auto-goedkeuren door apotheek
-            </Checkbox>
+            <Checkbox id="auto_confirm_assistent" name="auto_confirm_assistent" label="Auto-bevestigen door assistent" />
+            <Checkbox id="auto_confirm_apotheek" name="auto_confirm_apotheek" label="Auto-goedkeuren door apotheek" />
           </div>
 
           {addError && (

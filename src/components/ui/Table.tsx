@@ -1,6 +1,7 @@
 interface TableProps {
   children?: React.ReactNode
   className?: string
+  title?: string
 }
 
 export function Table({ children, className = '' }: TableProps) {
@@ -29,9 +30,9 @@ export function Tbody({ children }: TableProps) {
   )
 }
 
-export function Th({ children, className = '' }: TableProps) {
+export function Th({ children, className = '', title }: TableProps) {
   return (
-    <th className={`px-4 py-3 font-medium ${className}`}>
+    <th className={`px-4 py-3 font-medium ${className}`} title={title}>
       {children}
     </th>
   )

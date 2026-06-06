@@ -106,6 +106,39 @@ insert into public.locations (id, pharmacy_id, name, address) values
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', 'Hoofdvestiging', 'Grote Markt 1, 9000 Gent'),
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '66666666-6666-6666-6666-666666666666', 'Centraal',       'Stationstraat 12, 2000 Antwerpen');
 
+-- ── Platform config — realistic default rates ────────────────────────────────
+update public.platform_config set
+  default_hourly_rate_assistant = 22.00,
+  default_hourly_rate_pharmacy  = 27.00,
+  invoice_prefix                = '2026',
+  invoice_next_number           = 1,
+  company_name                  = 'Apotheekhulp',
+  company_street                = 'Wanzelesteenweg 98',
+  company_city                  = '9260 Serskamp',
+  company_phone                 = '0494/99.61.82',
+  company_email                 = 'info@apotheekhulp.be',
+  company_vat                   = 'BE1010.352.295';
+
+-- ── Assistant profiles ────────────────────────────────────────────────────────
+insert into public.assistant_profiles (user_id, vat_number, vat_liable, company_name, street, house_number, postcode, city, iban) values
+  ('11111111-1111-1111-1111-111111111111', 'BE 0698.123.456', true,  'Maya Abdo BV',        'Korte Meer',    '7',  '9000', 'Gent',      'BE68 5390 0754 7034'),
+  ('33333333-3333-3333-3333-333333333333', 'BE 0712.234.567', true,  'Laurent Consulting',  'Rue de la Loi', '20', '1000', 'Brussel',   'BE71 0689 9999 0101'),
+  ('44444444-4444-4444-4444-444444444444', null,              false, null,                  'Antwerpseweg',  '55', '2800', 'Mechelen',  'BE56 7512 0612 5004'),
+  ('55555555-5555-5555-5555-555555555555', 'BE 0765.345.678', true,  'Willems Interim',     'Veldstraat',    '3',  '9000', 'Gent',      'BE45 0689 1234 5678');
+
+-- ── Pharmacy profiles — add vat_liable ───────────────────────────────────────
+update public.pharmacy_profiles set vat_liable = true
+  where user_id in ('22222222-2222-2222-2222-222222222222', '66666666-6666-6666-6666-666666666666');
+
+-- ── Links (assistent ↔ locatie — with rates) ─────────────────────────────────
+insert into public.links (assistant_id, location_id, hourly_rate_assistant, hourly_rate_pharmacy) values
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 23.00, 28.50),
+  ('11111111-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 21.50, 26.50),
+  ('33333333-3333-3333-3333-333333333333', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 22.50, 27.50),
+  ('33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 22.00, 27.00),
+  ('44444444-4444-4444-4444-444444444444', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 20.00, 25.00),
+  ('44444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 21.00, 26.00);
+
 -- ── Shifts (June 2026) ────────────────────────────────────────────────────────
 insert into public.shifts (assistant_id, location_id, date, start_time, end_time, break_minutes, status) values
   -- Maya — approved

@@ -12,6 +12,7 @@ const PAGE = 25
 
 const SHIFT_SELECT = `
   id, assistant_id, location_id, date, start_time, end_time, break_minutes, status, notes,
+  assistent_invoice_id, apotheek_invoice_id,
   assistant:users(first_name, last_name, color),
   location:locations(name, pharmacy:pharmacy_profiles(company_name))
 `
@@ -32,6 +33,8 @@ export type PrestatieShift = {
   hourlyRateAssistant: number | null
   hourlyRatePharmacy: number | null
   color: string
+  assistentInvoiceId: string | null
+  apotheekInvoiceId:  string | null
 }
 
 export type PlatformConfig = {
@@ -52,7 +55,7 @@ export default async function PrestatiesPage({
 
   const [y, m] = month.split('-').map(Number)
   const monthStart = `${month}-01`
-  const monthEnd   = new Date(y, m, 0).toISOString().split('T')[0]
+  const monthEnd   = new Date(Date.UTC(y, m, 0)).toISOString().split('T')[0]
 
   const supabase = createAdminClient()
 
@@ -132,7 +135,9 @@ export default async function PrestatiesPage({
       locationName:  loc?.name ?? '—',
       hourlyRateAssistant: link?.rateAssistant ?? null,
       hourlyRatePharmacy:  link?.ratePharmacy  ?? null,
-      color:         colorById.get(s.assistant_id) ?? asst?.color ?? '#6c757d',
+      color:              colorById.get(s.assistant_id) ?? asst?.color ?? '#6c757d',
+      assistentInvoiceId: (s.assistent_invoice_id as string | null) ?? null,
+      apotheekInvoiceId:  (s.apotheek_invoice_id  as string | null) ?? null,
     }
   }
 

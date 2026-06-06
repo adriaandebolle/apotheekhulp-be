@@ -27,13 +27,16 @@ export default async function DashboardPage() {
   const thisMonth = now.toISOString().slice(0, 7)
   const [y, mo] = thisMonth.split('-').map(Number)
   const monthStart = `${thisMonth}-01`
-  const monthEnd   = new Date(y, mo, 0).toISOString().split('T')[0]
+  // Last day of current month — use UTC so no timezone shift
+  const monthEnd = new Date(Date.UTC(y, mo, 0)).toISOString().split('T')[0]
 
-  // Last 12 calendar months (oldest first)
+  // Last 12 calendar months (oldest first) — pure string arithmetic, no toISOString()
   const last12: string[] = []
   for (let i = 11; i >= 0; i--) {
-    const d = new Date(y, mo - 1 - i, 1)
-    last12.push(d.toISOString().slice(0, 7))
+    let m = mo - i
+    let yr = y
+    while (m <= 0) { m += 12; yr-- }
+    last12.push(`${yr}-${String(m).padStart(2, '0')}`)
   }
   const last12Start = `${last12[0]}-01`
 
