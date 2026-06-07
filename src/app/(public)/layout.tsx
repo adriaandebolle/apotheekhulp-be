@@ -21,7 +21,7 @@ export default async function PublicLayout({
       <div className="flex flex-col flex-1">
         <main className="flex-1 pt-14 lg:pt-0">{children}</main>
         <footer className="bg-background border-t border-border px-6 py-6">
-          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-text-muted">
+          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-text-muted">
             <span>© {new Date().getFullYear()} Apotheekhulp</span>
             <div className="flex flex-wrap gap-4 justify-center">
               <a

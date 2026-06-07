@@ -6,7 +6,7 @@ export default function OverOnsPage() {
     <div>
       {/* Hero */}
       <section className="bg-primary px-6 py-16">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <p className="text-xs font-semibold tracking-widest text-white/70 uppercase mb-2">
             Wie zijn wij
           </p>
@@ -20,7 +20,7 @@ export default function OverOnsPage() {
 
       {/* Intro */}
       <section className="bg-surface px-6 py-14">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <p className="text-text-muted leading-relaxed mb-4">
             Carolien en Lieselot vonden elkaar als hartsvriendinnen en
             studeerden in 2013 af aan de UGent. Met meer dan tien jaar ervaring
@@ -39,7 +39,7 @@ export default function OverOnsPage() {
 
       {/* Personen */}
       <section className="bg-background px-6 py-14">
-        <div className="max-w-3xl mx-auto grid sm:grid-cols-2 gap-8">
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-2 gap-8">
           {/* Lieselot */}
           <div className="bg-surface rounded-2xl border border-border overflow-hidden">
             <div className="relative h-72 lg:h-96">

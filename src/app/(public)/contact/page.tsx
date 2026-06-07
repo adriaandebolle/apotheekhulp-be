@@ -1,36 +1,41 @@
-'use client'
+"use client";
 
-import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui'
-import { submitContactForm } from '@/lib/actions/contact'
+import { useState, useTransition } from "react";
+import { Button } from "@/components/ui";
+import { submitContactForm } from "@/lib/actions/contact";
 
 export default function ContactPage() {
-  const [naam, setNaam] = useState('')
-  const [telefoon, setTelefoon] = useState('')
-  const [email, setEmail] = useState('')
-  const [bericht, setBericht] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [isPending, startTransition] = useTransition()
+  const [naam, setNaam] = useState("");
+  const [telefoon, setTelefoon] = useState("");
+  const [email, setEmail] = useState("");
+  const [bericht, setBericht] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
+    e.preventDefault();
+    setError(null);
     startTransition(async () => {
-      const result = await submitContactForm({ naam, telefoon, email, bericht })
-      if ('error' in result) {
-        setError(result.error)
+      const result = await submitContactForm({
+        naam,
+        telefoon,
+        email,
+        bericht,
+      });
+      if ("error" in result) {
+        setError(result.error);
       } else {
-        setSuccess(true)
+        setSuccess(true);
       }
-    })
+    });
   }
 
   return (
     <div>
       {/* Hero */}
       <section className="bg-primary px-6 py-16">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <p className="text-xs font-semibold tracking-widest text-white/70 uppercase mb-2">
             Contact
           </p>
@@ -123,7 +128,10 @@ export default function ContactPage() {
             {success ? (
               <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-5 py-4 text-sm text-emerald-800">
                 <p className="font-semibold mb-1">Bericht verzonden!</p>
-                <p>Bedankt voor uw bericht. We nemen zo snel mogelijk contact met u op.</p>
+                <p>
+                  Bedankt voor uw bericht. We nemen zo snel mogelijk contact met
+                  u op.
+                </p>
               </div>
             ) : (
               <form className="space-y-4" onSubmit={handleSubmit}>
@@ -140,7 +148,7 @@ export default function ContactPage() {
                       type="text"
                       required
                       value={naam}
-                      onChange={e => setNaam(e.target.value)}
+                      onChange={(e) => setNaam(e.target.value)}
                       className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                       placeholder="Uw naam"
                     />
@@ -156,7 +164,7 @@ export default function ContactPage() {
                       id="telefoon"
                       type="tel"
                       value={telefoon}
-                      onChange={e => setTelefoon(e.target.value)}
+                      onChange={(e) => setTelefoon(e.target.value)}
                       className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                       placeholder="+32 ..."
                     />
@@ -174,7 +182,7 @@ export default function ContactPage() {
                     type="email"
                     required
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                     placeholder="uw@email.be"
                   />
@@ -191,7 +199,7 @@ export default function ContactPage() {
                     rows={4}
                     required
                     value={bericht}
-                    onChange={e => setBericht(e.target.value)}
+                    onChange={(e) => setBericht(e.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
                     placeholder="Hoe kunnen we u helpen?"
                   />
@@ -204,7 +212,7 @@ export default function ContactPage() {
                 )}
 
                 <Button type="submit" fullWidth disabled={isPending}>
-                  {isPending ? 'Verzenden…' : 'Verstuur'}
+                  {isPending ? "Verzenden…" : "Verstuur"}
                 </Button>
               </form>
             )}
@@ -212,5 +220,5 @@ export default function ContactPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

@@ -27,7 +27,7 @@ export default async function HomePage() {
           priority
         />
         <div className="absolute inset-0 bg-primary/75" />
-        <div className="relative z-10 max-w-2xl mx-auto text-center">
+        <div className="relative z-10 max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-white mb-4">
             Hulp in de Apotheek
           </h1>
@@ -228,7 +228,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

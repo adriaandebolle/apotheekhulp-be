@@ -4,7 +4,7 @@ import { InstellingenForm } from "./InstellingenForm";
 export default async function InstellingenPage() {
   const config = await getPlatformConfig();
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-8 max-w-5xl">
       <p className="text-xs text-text-muted mb-1">Beheer</p>
       <h1 className="text-2xl font-bold text-text mb-2">
         Platforminstellingen

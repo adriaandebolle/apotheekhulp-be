@@ -1,35 +1,44 @@
-import nodemailer from 'nodemailer'
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SMTP_HOST ?? '127.0.0.1',
-  port: parseInt(process.env.EMAIL_SMTP_PORT ?? '54325', 10),
-  secure: process.env.EMAIL_SMTP_SECURE === 'true',
+  host: process.env.EMAIL_SMTP_HOST ?? "127.0.0.1",
+  port: parseInt(process.env.EMAIL_SMTP_PORT ?? "54325", 10),
+  secure: process.env.EMAIL_SMTP_SECURE === "true",
   auth: process.env.EMAIL_SMTP_USER
     ? { user: process.env.EMAIL_SMTP_USER, pass: process.env.EMAIL_SMTP_PASS }
     : undefined,
-})
+});
 
-const FROM    = process.env.EMAIL_FROM    ?? 'noreply@apotheekhulp.be'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.apotheekhulp.be'
+const FROM = process.env.EMAIL_FROM ?? "noreply@apotheekhulp.be";
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL ?? "https://app.apotheekhulp.be";
 
 // ── Inline-style converter (email clients ignore stylesheets) ─────────────────
 
 function inlineRichText(html: string): string {
   return html
-    .replace(/<blockquote>/gi,
-      '<blockquote style="border-left:3px solid #0d9488;padding-left:1em;margin:0.75em 0;color:#64748b;font-style:italic;">')
-    .replace(/<h2>/gi,
-      '<h2 style="font-size:1.2em;font-weight:700;color:#0f172a;margin:1em 0 0.4em;">')
-    .replace(/<h3>/gi,
-      '<h3 style="font-size:1.05em;font-weight:600;color:#0f172a;margin:0.8em 0 0.3em;">')
-    .replace(/<ul>/gi,
-      '<ul style="padding-left:1.5em;margin:0.5em 0;list-style-type:disc;">')
-    .replace(/<ol>/gi,
-      '<ol style="padding-left:1.5em;margin:0.5em 0;list-style-type:decimal;">')
-    .replace(/<li>/gi,
-      '<li style="margin:0.2em 0;line-height:1.6;">')
-    .replace(/<p>/gi,
-      '<p style="margin:0.4em 0;line-height:1.65;">')
+    .replace(
+      /<blockquote>/gi,
+      '<blockquote style="border-left:3px solid #0d9488;padding-left:1em;margin:0.75em 0;color:#64748b;font-style:italic;">',
+    )
+    .replace(
+      /<h2>/gi,
+      '<h2 style="font-size:1.2em;font-weight:700;color:#0f172a;margin:1em 0 0.4em;">',
+    )
+    .replace(
+      /<h3>/gi,
+      '<h3 style="font-size:1.05em;font-weight:600;color:#0f172a;margin:0.8em 0 0.3em;">',
+    )
+    .replace(
+      /<ul>/gi,
+      '<ul style="padding-left:1.5em;margin:0.5em 0;list-style-type:disc;">',
+    )
+    .replace(
+      /<ol>/gi,
+      '<ol style="padding-left:1.5em;margin:0.5em 0;list-style-type:decimal;">',
+    )
+    .replace(/<li>/gi, '<li style="margin:0.2em 0;line-height:1.6;">')
+    .replace(/<p>/gi, '<p style="margin:0.4em 0;line-height:1.65;">');
 }
 
 // ── Email templates ───────────────────────────────────────────────────────────
@@ -75,19 +84,29 @@ function baseLayout(content: string) {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
 }
 
 function escHtml(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-function welcomeHtml(email: string, password: string, role: 'apotheek' | 'assistent') {
-  const isAssistent = role === 'assistent'
-  const greeting    = isAssistent ? 'Welkom bij Apotheekhulp!' : 'Uw apotheekaccount is aangemaakt'
-  const subtitle    = isAssistent
-    ? 'Uw account als apotheekassistent is klaar. U kunt zich aanmelden via onderstaande gegevens.'
-    : 'Uw account als apotheek is klaar. U kunt zich aanmelden via onderstaande gegevens.'
+function welcomeHtml(
+  email: string,
+  password: string,
+  role: "apotheek" | "assistent",
+) {
+  const isAssistent = role === "assistent";
+  const greeting = isAssistent
+    ? "Welkom bij Apotheekhulp!"
+    : "Uw apotheekaccount is aangemaakt";
+  const subtitle = isAssistent
+    ? "Uw account als apotheekassistent is klaar. U kunt zich aanmelden via onderstaande gegevens."
+    : "Uw account als apotheek is klaar. U kunt zich aanmelden via onderstaande gegevens.";
 
   return baseLayout(`
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
@@ -138,29 +157,34 @@ function welcomeHtml(email: string, password: string, role: 'apotheek' | 'assist
     <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;line-height:1.6;">
       Wijzig uw wachtwoord na de eerste aanmelding via uw profielpagina.
     </p>
-  `)
+  `);
 }
 
 // ── Public functions ──────────────────────────────────────────────────────────
 
-export async function sendWelcomeEmail(to: string, password: string, role: 'apotheek' | 'assistent') {
-  const subject = role === 'assistent'
-    ? 'Welkom bij Apotheekhulp'
-    : 'Uw Apotheekhulp account is aangemaakt'
+export async function sendWelcomeEmail(
+  to: string,
+  password: string,
+  role: "apotheek" | "assistent",
+) {
+  const subject =
+    role === "assistent"
+      ? "Welkom bij Apotheekhulp"
+      : "Uw Apotheekhulp account is aangemaakt";
 
   await transporter.sendMail({
-    from:    FROM,
+    from: FROM,
     to,
     subject,
-    html:    welcomeHtml(to, password, role),
-  })
+    html: welcomeHtml(to, password, role),
+  });
 }
 
 export async function sendContactNotification(data: {
-  naam: string
-  telefoon: string
-  email: string
-  bericht: string
+  naam: string;
+  telefoon: string;
+  email: string;
+  bericht: string;
 }) {
   const html = baseLayout(`
     <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#0f172a;">Nieuw contactbericht</h1>
@@ -182,12 +206,16 @@ export async function sendContactNotification(data: {
                 <a href="mailto:${escHtml(data.email)}" style="font-size:14px;font-weight:600;color:#0d9488;text-decoration:none;">${escHtml(data.email)}</a>
               </td>
             </tr>
-            ${data.telefoon ? `<tr>
+            ${
+              data.telefoon
+                ? `<tr>
               <td style="padding-bottom:10px;">
                 <span style="font-size:12px;color:#94a3b8;display:block;margin-bottom:2px;">Telefoon</span>
                 <span style="font-size:14px;font-weight:600;color:#0f172a;">${escHtml(data.telefoon)}</span>
               </td>
-            </tr>` : ''}
+            </tr>`
+                : ""
+            }
           </table>
         </td>
       </tr>
@@ -195,15 +223,15 @@ export async function sendContactNotification(data: {
 
     <p style="margin:0 0 8px;font-size:12px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Bericht</p>
     <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px 20px;font-size:14px;color:#334155;line-height:1.7;white-space:pre-wrap;">${escHtml(data.bericht)}</div>
-  `)
+  `);
 
   await transporter.sendMail({
-    from:    FROM,
-    to:      'info@apotheekhulp.be',
+    from: FROM,
+    to: "info@apotheekhulp.be",
     replyTo: data.email,
     subject: `Contactbericht van ${data.naam}`,
     html,
-  })
+  });
 }
 
 export async function sendContactConfirmation(to: string, naam: string) {
@@ -226,27 +254,28 @@ export async function sendContactConfirmation(to: string, naam: string) {
     <p style="margin:0;font-size:12px;color:#94a3b8;text-align:center;line-height:1.6;">
       Met vriendelijke groeten,<br />Het Apotheekhulp team
     </p>
-  `)
+  `);
 
   await transporter.sendMail({
-    from:    FROM,
+    from: FROM,
     to,
-    subject: 'We hebben uw bericht ontvangen — Apotheekhulp',
+    subject: "We hebben uw bericht ontvangen — Apotheekhulp",
     html,
-  })
+  });
 }
 
 export async function sendBerichtNotification(
   to: string[],
   title: string,
   body: string,
-  role: 'assistent' | 'apotheek',
+  role: "assistent" | "apotheek",
 ) {
-  if (to.length === 0) return
+  if (to.length === 0) return;
 
-  const portalUrl = role === 'assistent'
-    ? `${APP_URL}/assistent/tarificatieberichten`
-    : `${APP_URL}/apotheek/tarificaties`
+  const portalUrl =
+    role === "assistent"
+      ? `${APP_URL}/assistent/berichten`
+      : `${APP_URL}/apotheek/berichten`;
 
   const html = baseLayout(`
     <h1 style="margin:0 0 20px;font-size:20px;font-weight:700;color:#0f172a;">${escHtml(title)}</h1>
@@ -265,16 +294,16 @@ export async function sendBerichtNotification(
         </td>
       </tr>
     </table>
-  `)
+  `);
 
   await Promise.allSettled(
-    to.map(address =>
+    to.map((address) =>
       transporter.sendMail({
-        from:    FROM,
-        to:      address,
+        from: FROM,
+        to: address,
         subject: `Nieuw bericht: ${title}`,
         html,
-      })
-    )
-  )
+      }),
+    ),
+  );
 }
