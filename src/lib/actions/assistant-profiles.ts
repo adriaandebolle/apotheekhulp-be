@@ -1,9 +1,38 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type ActionResult<T = void> = { error: string } | { data: T }
+
+export async function updateMyAssistantProfile(
+  profile: {
+    vat_number?:          string
+    vat_liable?:          boolean
+    company_name?:        string
+    street?:              string
+    house_number?:        string
+    postcode?:            string
+    city?:                string
+    iban?:                string
+    invoice_prefix?:      string
+    invoice_next_number?: number
+  },
+): Promise<ActionResult> {
+  const userClient = await createClient()
+  const { data: { user } } = await userClient.auth.getUser()
+  if (!user) return { error: 'Niet ingelogd.' }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('assistant_profiles')
+    .upsert({ user_id: user.id, ...profile, updated_at: new Date().toISOString() })
+  if (error) return { error: error.message }
+
+  revalidatePath('/assistent/profiel')
+  return { data: undefined }
+}
 
 export async function upsertAssistantProfile(
   userId: string,

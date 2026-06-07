@@ -22,7 +22,12 @@ export async function GET(request: NextRequest) {
 
   const admin = createAdminClient()
   const { data: me } = await admin.from('users').select('role').eq('id', user.id).single()
-  if (me?.role !== 'admin') return new Response('Geen toegang.', { status: 403 })
+  const isAdmin     = me?.role === 'admin'
+  const isAssistent = me?.role === 'assistent'
+  if (!isAdmin && !isAssistent) return new Response('Geen toegang.', { status: 403 })
+
+  // Assistants may only download their own invoice (invoice_id path only)
+  if (isAssistent && !invoiceId) return new Response('Geen toegang.', { status: 403 })
 
   // ── Invoice-based PDF ────────────────────────────────────────────────────
   if (invoiceId) {
@@ -33,6 +38,7 @@ export async function GET(request: NextRequest) {
       .eq('type', 'assistent')
       .single()
     if (!invoice) return new Response('Factuur niet gevonden.', { status: 404 })
+    if (isAssistent && invoice.recipient_id !== user.id) return new Response('Geen toegang.', { status: 403 })
 
     const assistantId = invoice.recipient_id
 

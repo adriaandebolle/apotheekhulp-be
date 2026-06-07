@@ -8,16 +8,17 @@ const DAYS = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo']
 
 type Props = {
   assistants: AssistantRow[]
-  available: Set<string>
+  unavailable: Set<string>
 }
 
-export default function BeschikbaarheidClient({ assistants, available }: Props) {
+export default function BeschikbaarheidClient({ assistants, unavailable }: Props) {
+  // State tracks UNAVAILABLE days (rows in DB). Checked = available = NOT in this set.
   const [optimistic, applyOptimistic] = useOptimistic(
-    available,
+    unavailable,
     (state, { key, checked }: { key: string; checked: boolean }) => {
       const next = new Set(state)
-      if (checked) next.add(key)
-      else next.delete(key)
+      if (checked) next.delete(key)  // marking available → remove from unavailable set
+      else next.add(key)             // marking unavailable → add to unavailable set
       return next
     },
   )
@@ -27,7 +28,8 @@ export default function BeschikbaarheidClient({ assistants, available }: Props) 
     const key = `${assistantId}:${dayOfWeek}`
     startTransition(async () => {
       applyOptimistic({ key, checked })
-      await toggleAvailability(assistantId, dayOfWeek, checked)
+      // checked=true means "mark available" = delete row → pass false to action (action: false = delete)
+      await toggleAvailability(assistantId, dayOfWeek, !checked)
     })
   }
 
@@ -63,7 +65,7 @@ export default function BeschikbaarheidClient({ assistants, available }: Props) 
               </td>
               {DAYS.map((_, dayIdx) => {
                 const key = `${a.id}:${dayIdx}`
-                const checked = optimistic.has(key)
+                const checked = !optimistic.has(key) // available = no row = checked
                 return (
                   <td key={dayIdx} className="px-4 py-3 text-center">
                     <input

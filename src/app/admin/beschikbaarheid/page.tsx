@@ -28,15 +28,16 @@ export default async function BeschikbaarheidPage() {
     color: (a.color as string | null) ?? '#6c757d',
   }))
 
-  const available = new Set<string>(
+  // Rows = days the assistant CANNOT work (unavailability)
+  const unavailable = new Set<string>(
     (rawAvailability ?? []).map(r => `${r.assistant_id}:${r.day_of_week}`)
   )
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold text-text mb-1">Beschikbaarheid</h1>
-      <p className="text-text-muted mb-6">Weekraster — vink aan op welke dagen elke assistent beschikbaar is.</p>
-      <BeschikbaarheidClient assistants={assistants} available={available} />
+      <p className="text-text-muted mb-6">Weekraster — een vinkje betekent de assistent is beschikbaar. Standaard beschikbaar op alle dagen.</p>
+      <BeschikbaarheidClient assistants={assistants} unavailable={unavailable} />
     </div>
   )
 }

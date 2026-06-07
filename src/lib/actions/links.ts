@@ -1,9 +1,35 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type ActionResult<T = void> = { error: string } | { data: T }
+
+export async function setMyAutoConfirm(linkId: string, value: boolean): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Niet ingelogd.' }
+
+  const admin = createAdminClient()
+  // Verify ownership before updating
+  const { data: link } = await admin
+    .from('links')
+    .select('assistant_id')
+    .eq('id', linkId)
+    .is('deleted_at', null)
+    .single()
+  if (!link || link.assistant_id !== user.id) return { error: 'Geen toegang.' }
+
+  const { error } = await admin
+    .from('links')
+    .update({ auto_confirm_assistent: value })
+    .eq('id', linkId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/assistent/profiel')
+  return { data: undefined }
+}
 
 export async function createLink(data: {
   assistant_id: string

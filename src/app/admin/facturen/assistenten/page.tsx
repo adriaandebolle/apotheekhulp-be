@@ -50,6 +50,7 @@ export default async function FacturenAssistentPage({
     { data: rawLinks },
     { data: config },
     { data: rawUsers },
+    { data: rawProfiles },
     { data: monthDates },
     { data: rawLocations },
     { data: rawInvoices },
@@ -69,10 +70,12 @@ export default async function FacturenAssistentPage({
       .select('default_hourly_rate_assistant')
       .single(),
     supabase.from('users')
-      .select('id, first_name, last_name, assistant_profiles(vat_liable, invoice_prefix, invoice_next_number)')
+      .select('id, first_name, last_name')
       .eq('role', 'assistent')
       .eq('is_active', true)
       .order('last_name'),
+    supabase.from('assistant_profiles')
+      .select('user_id, vat_liable, invoice_prefix, invoice_next_number'),
     supabase.from('shifts')
       .select('date')
       .eq('status', 'approved')
@@ -94,6 +97,11 @@ export default async function FacturenAssistentPage({
       .lte('invoice_date', monthEnd)
       .order('invoice_date', { ascending: false }),
   ])
+
+  type ProfileRow = { vat_liable: boolean | null; invoice_prefix: string | null; invoice_next_number: number | null }
+  const profileByUser = new Map<string, ProfileRow>(
+    (rawProfiles ?? []).map(p => [p.user_id, p as ProfileRow])
+  )
 
   const pharmacyByLocation = new Map<string, string>()
   for (const loc of rawLocations ?? []) {
@@ -122,7 +130,7 @@ export default async function FacturenAssistentPage({
     const shifts = shiftsByAssistant.get(u.id)
     if (!shifts || shifts.length === 0) continue
 
-    const profile   = (u.assistant_profiles as unknown as { vat_liable: boolean | null; invoice_prefix: string | null; invoice_next_number: number | null }[] | null)?.[0]
+    const profile   = profileByUser.get(u.id)
     const vatLiable = profile?.vat_liable ?? true
     const invPrefix = profile?.invoice_prefix ?? null
     const invNext   = profile?.invoice_next_number ?? 1
