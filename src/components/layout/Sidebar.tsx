@@ -47,7 +47,7 @@ const adminNav: NavItem[] = [
       { label: 'Apotheken',   href: '/admin/facturen/apotheken' },
     ],
   },
-  { label: 'Tarificatie',   href: '/admin/tarificatie',   icon: icons.tarief },
+  { label: 'Berichten',     href: '/admin/berichten',     icon: icons.tarief },
   { label: 'Instellingen', href: '/admin/instellingen', icon: icons.settings },
 ]
 
@@ -160,7 +160,16 @@ export function Sidebar({ role, badges = {} }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-2 pb-4 border-t border-border pt-4">
+      <div className="px-2 pb-4 border-t border-border pt-4 space-y-0.5">
+        <Link
+          href="/contact"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-text-muted hover:bg-slate-50 hover:text-text transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          Contact
+        </Link>
         <button
           type="button"
           onClick={handleSignOut}

@@ -1,6 +1,31 @@
-import { Button } from "@/components/ui";
+'use client'
+
+import { useState, useTransition } from 'react'
+import { Button } from '@/components/ui'
+import { submitContactForm } from '@/lib/actions/contact'
 
 export default function ContactPage() {
+  const [naam, setNaam] = useState('')
+  const [telefoon, setTelefoon] = useState('')
+  const [email, setEmail] = useState('')
+  const [bericht, setBericht] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    startTransition(async () => {
+      const result = await submitContactForm({ naam, telefoon, email, bericht })
+      if ('error' in result) {
+        setError(result.error)
+      } else {
+        setSuccess(true)
+      }
+    })
+  }
+
   return (
     <div>
       {/* Hero */}
@@ -94,72 +119,98 @@ export default function ContactPage() {
             <h2 className="text-base font-bold text-text mb-5">
               Stuur ons een bericht
             </h2>
-            <form className="space-y-4">
-              <div className="grid sm:grid-cols-2 gap-4">
+
+            {success ? (
+              <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-5 py-4 text-sm text-emerald-800">
+                <p className="font-semibold mb-1">Bericht verzonden!</p>
+                <p>Bedankt voor uw bericht. We nemen zo snel mogelijk contact met u op.</p>
+              </div>
+            ) : (
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="naam"
+                      className="block text-xs font-medium text-text-muted mb-1.5"
+                    >
+                      Naam <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="naam"
+                      type="text"
+                      required
+                      value={naam}
+                      onChange={e => setNaam(e.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="Uw naam"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="telefoon"
+                      className="block text-xs font-medium text-text-muted mb-1.5"
+                    >
+                      Telefoonnummer
+                    </label>
+                    <input
+                      id="telefoon"
+                      type="tel"
+                      value={telefoon}
+                      onChange={e => setTelefoon(e.target.value)}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                      placeholder="+32 ..."
+                    />
+                  </div>
+                </div>
                 <div>
                   <label
-                    htmlFor="naam"
+                    htmlFor="email"
                     className="block text-xs font-medium text-text-muted mb-1.5"
                   >
-                    Naam
+                    E-mail <span className="text-red-500">*</span>
                   </label>
                   <input
-                    id="naam"
-                    type="text"
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
                     className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="Uw naam"
+                    placeholder="uw@email.be"
                   />
                 </div>
                 <div>
                   <label
-                    htmlFor="telefoon"
+                    htmlFor="bericht"
                     className="block text-xs font-medium text-text-muted mb-1.5"
                   >
-                    Telefoonnummer
+                    Bericht <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    id="telefoon"
-                    type="tel"
-                    className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                    placeholder="+32 ..."
+                  <textarea
+                    id="bericht"
+                    rows={4}
+                    required
+                    value={bericht}
+                    onChange={e => setBericht(e.target.value)}
+                    className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+                    placeholder="Hoe kunnen we u helpen?"
                   />
                 </div>
-              </div>
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-xs font-medium text-text-muted mb-1.5"
-                >
-                  E-mail
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  placeholder="uw@email.be"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="bericht"
-                  className="block text-xs font-medium text-text-muted mb-1.5"
-                >
-                  Bericht
-                </label>
-                <textarea
-                  id="bericht"
-                  rows={4}
-                  className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
-                  placeholder="Hoe kunnen we u helpen?"
-                />
-              </div>
-              <Button type="submit" fullWidth>
-                Verstuur
-              </Button>
-            </form>
+
+                {error && (
+                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                    {error}
+                  </p>
+                )}
+
+                <Button type="submit" fullWidth disabled={isPending}>
+                  {isPending ? 'Verzenden…' : 'Verstuur'}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
       </section>
     </div>
-  );
+  )
 }

@@ -20,7 +20,7 @@
 | 6 | Prestaties Workflow | 6 | ✅ Afgerond |
 | 7 | Dashboard | 4 | ✅ Afgerond |
 | 8 | Maandelijkse PDF-berekening + Factuurbeheersysteem | 4 | ✅ Afgerond |
-| 9 | Berichten & E-mail | 4 | |
+| 9 | Berichten & E-mail | 4 | ✅ Afgerond |
 | 10 | Publieke website | 1 | ✅ Pagina's afgerond — enkel contactformulier e-mail resterend |
 | 11 | Assistent portaal | 5 | |
 | 12 | Apotheek portaal | 3 | |

@@ -10,6 +10,7 @@ create table public.users (
   avatar_url  text,
   color       text,
   is_active   boolean     not null default true,
+  ical_token  uuid        unique not null default gen_random_uuid(),
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
@@ -227,12 +228,14 @@ create policy "pharmacy can read shifts at own locations"
 -- messages
 -- ============================================================
 create table public.messages (
-  id            uuid    primary key default gen_random_uuid(),
-  title         text    not null,
-  body          text    not null,
-  show_as_popup boolean not null default false,
-  created_at    timestamptz not null default now(),
-  updated_at    timestamptz not null default now()
+  id                 uuid    primary key default gen_random_uuid(),
+  title              text    not null,
+  body               text    not null,
+  show_as_popup      boolean not null default false,
+  notify_assistants  boolean not null default false,
+  notify_pharmacies  boolean not null default false,
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now()
 );
 
 alter table public.messages enable row level security;

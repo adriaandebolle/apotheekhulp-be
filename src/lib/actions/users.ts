@@ -130,6 +130,23 @@ export async function setUserActive(userId: string, isActive: boolean): Promise<
   return { data: undefined }
 }
 
+export async function updateMyUserProfile(
+  profile: { first_name?: string; last_name?: string; phone?: string },
+): Promise<ActionResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Niet ingelogd.' }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ ...profile, updated_at: new Date().toISOString() })
+    .eq('id', user.id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/assistent/profiel')
+  return { data: undefined }
+}
+
 export async function adminChangePassword(userId: string, newPassword: string): Promise<ActionResult> {
   if (!newPassword || newPassword.length < 8) return { error: 'Wachtwoord moet minstens 8 tekens bevatten.' }
 
