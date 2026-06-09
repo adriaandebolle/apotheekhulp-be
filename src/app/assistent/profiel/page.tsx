@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getEffectiveUserId } from "@/lib/effective-user-id";
 import ProfielAssistentClient from "./ProfielAssistentClient";
 
 export type LinkRow = {
@@ -20,6 +21,7 @@ export default async function AssistentProfielPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const effectiveId = await getEffectiveUserId(user.id);
   const admin = createAdminClient();
 
   const [{ data: userRow }, { data: profile }, { data: rawLinks }] =
@@ -27,14 +29,14 @@ export default async function AssistentProfielPage() {
       admin
         .from("users")
         .select("first_name, last_name, phone")
-        .eq("id", user.id)
+        .eq("id", effectiveId)
         .single(),
       admin
         .from("assistant_profiles")
         .select(
           "vat_number, vat_liable, company_name, street, house_number, postcode, city, iban, invoice_prefix, invoice_next_number",
         )
-        .eq("user_id", user.id)
+        .eq("user_id", effectiveId)
         .maybeSingle(),
       admin
         .from("links")
@@ -42,7 +44,7 @@ export default async function AssistentProfielPage() {
           `id, hourly_rate_assistant, km_allowance, distance_km, auto_confirm_assistent,
            location:locations(name, pharmacy:pharmacy_profiles(company_name))`,
         )
-        .eq("assistant_id", user.id)
+        .eq("assistant_id", effectiveId)
         .is("deleted_at", null)
         .order("id"),
     ]);

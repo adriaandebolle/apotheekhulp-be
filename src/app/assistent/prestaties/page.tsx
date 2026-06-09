@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user-id'
 import PrestatiesAssistentClient, { type AssistentShift } from './PrestatiesAssistentClient'
 
 const PAGE = 25
@@ -19,6 +20,7 @@ export default async function AssistentPrestatiesPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const effectiveId = await getEffectiveUserId(user.id)
   const params   = await searchParams
   const pageHist = Math.max(0, parseInt(params.ph ?? '0', 10) || 0)
 
@@ -27,10 +29,10 @@ export default async function AssistentPrestatiesPage({
 
   const [pendingResult, histResult] = await Promise.all([
     adminSupabase.from('shifts').select(SHIFT_SELECT)
-      .eq('assistant_id', user.id).eq('status', 'pending_assistant')
+      .eq('assistant_id', effectiveId).eq('status', 'pending_assistant')
       .is('deleted_at', null).order('date', { ascending: true }),
     adminSupabase.from('shifts').select(SHIFT_SELECT, { count: 'exact' })
-      .eq('assistant_id', user.id).neq('status', 'pending_assistant')
+      .eq('assistant_id', effectiveId).neq('status', 'pending_assistant')
       .is('deleted_at', null).order('date', { ascending: false })
       .range(pageHist * PAGE, pageHist * PAGE + PAGE - 1),
   ])

@@ -105,14 +105,15 @@ export default function KalenderClient({
   }
 
   const events: EventInput[] = shifts
-    .filter(s => visibleIds.has(s.assistantId) && visibleStatuses.has(s.status as Status))
+    .filter(s => (!s.assistantId || visibleIds.has(s.assistantId)) && visibleStatuses.has(s.status as Status))
     .map(s => {
       const opacity  = STATUS_OPACITY[s.status] ?? 0.5
       const bg       = hexWithOpacity(s.color, opacity)
       const isDashed = s.status !== 'approved'
+      const label    = s.assistantId ? s.assistantName : 'Niet toegewezen'
       return {
         id:              s.id,
-        title:           `${s.assistantName} - ${s.startTime?.slice(0, 5) ?? ''}`,
+        title:           `${label} - ${s.startTime?.slice(0, 5) ?? ''}`,
         start:           `${s.date}T${s.startTime}`,
         end:             `${s.date}T${s.endTime}`,
         backgroundColor: bg,

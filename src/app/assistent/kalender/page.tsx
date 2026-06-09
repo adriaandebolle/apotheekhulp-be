@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user-id'
 import KalenderAssistentWrapper from './KalenderAssistentWrapper'
 
 export type ShiftData = {
@@ -29,6 +30,7 @@ export default async function AssistentKalenderPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const effectiveId = await getEffectiveUserId(user.id)
   const admin = createAdminClient()
   const { start, end } = dateRange()
 
@@ -38,7 +40,7 @@ export default async function AssistentKalenderPage() {
       id, date, start_time, end_time, break_minutes, status,
       location:locations(name, pharmacy:pharmacy_profiles(company_name))
     `)
-    .eq('assistant_id', user.id)
+    .eq('assistant_id', effectiveId)
     .is('deleted_at', null)
     .gte('date', start)
     .lte('date', end)

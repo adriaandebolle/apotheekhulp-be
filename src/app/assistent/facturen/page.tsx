@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { Badge } from '@/components/ui/Badge'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
 
@@ -18,12 +19,13 @@ export default async function AssistentFacturenPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const effectiveId = await getEffectiveUserId(user.id)
   const admin = createAdminClient()
   const { data: invoices } = await admin
     .from('invoices')
     .select('id, invoice_number, invoice_date, status, subtotal, vat_amount, total')
     .eq('type', 'assistent')
-    .eq('recipient_id', user.id)
+    .eq('recipient_id', effectiveId)
     .order('invoice_date', { ascending: false })
 
   return (

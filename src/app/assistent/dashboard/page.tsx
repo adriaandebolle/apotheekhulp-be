@@ -1,11 +1,14 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getEffectiveUserId } from "@/lib/effective-user-id";
 import { calcHours } from "@/lib/pdf/pdf-utils";
 import { Badge } from "@/components/ui/Badge";
+import AssistentDashboardCharts from "./DashboardCharts";
+import type { StatusSlice } from "@/app/admin/dashboard/StatusDonut";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("nl-BE", {
+  return new Date(iso + "T00:00:00").toLocaleDateString("nl-BE", {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -16,6 +19,14 @@ function formatTime(t: string) {
   return t.slice(0, 5);
 }
 
+function monthLabel(ym: string) {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("nl-BE", {
+    month: "short",
+    year: "2-digit",
+  });
+}
+
 export default async function AssistentDashboardPage() {
   const supabase = await createClient();
   const {
@@ -23,37 +34,55 @@ export default async function AssistentDashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const effectiveId = await getEffectiveUserId(user.id);
   const admin = createAdminClient();
   const now = new Date();
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const [y, mo] = [now.getFullYear(), now.getMonth() + 1];
+  const monthStart = `${y}-${String(mo).padStart(2, "0")}-01`;
   const todayIso = now.toISOString().split("T")[0];
+
+  // Last 12 calendar months oldest-first
+  const last12: string[] = [];
+  for (let i = 11; i >= 0; i--) {
+    let m = mo - i;
+    let yr = y;
+    while (m <= 0) { m += 12; yr--; }
+    last12.push(`${yr}-${String(m).padStart(2, "0")}`);
+  }
+  const last12Start = `${last12[0]}-01`;
 
   const SHIFT_SELECT = `id, date, start_time, end_time, break_minutes, status,
     location:locations(name, pharmacy:pharmacy_profiles(company_name))`;
 
-  const [pendingRes, monthRes, upcomingRes] = await Promise.all([
+  const [pendingRes, monthRes, upcomingRes, shifts12mRes] = await Promise.all([
     admin
       .from("shifts")
       .select("id", { count: "exact", head: true })
-      .eq("assistant_id", user.id)
+      .eq("assistant_id", effectiveId)
       .eq("status", "pending_assistant")
       .is("deleted_at", null),
     admin
       .from("shifts")
       .select(SHIFT_SELECT)
-      .eq("assistant_id", user.id)
+      .eq("assistant_id", effectiveId)
       .eq("status", "approved")
       .is("deleted_at", null)
       .gte("date", monthStart),
     admin
       .from("shifts")
       .select(SHIFT_SELECT)
-      .eq("assistant_id", user.id)
+      .eq("assistant_id", effectiveId)
       .eq("status", "approved")
       .is("deleted_at", null)
       .gte("date", todayIso)
       .order("date", { ascending: true })
       .limit(5),
+    admin
+      .from("shifts")
+      .select("date, status, start_time, end_time, break_minutes")
+      .eq("assistant_id", effectiveId)
+      .is("deleted_at", null)
+      .gte("date", last12Start),
   ]);
 
   const pendingCount = pendingRes.count ?? 0;
@@ -89,12 +118,50 @@ export default async function AssistentDashboardPage() {
     };
   });
 
+  // Chart data
+  type MonthPoint = {
+    month: string;
+    hours: number;
+    approved: number;
+    pending: number;
+    denied: number;
+  };
+
+  const all12 = shifts12mRes.data ?? [];
+  const monthlyData: MonthPoint[] = last12.map((ym) => {
+    const inMonth = all12.filter((s) => s.date.startsWith(ym));
+    const approvedInMonth = inMonth.filter((s) => s.status === "approved");
+    const hours = approvedInMonth.reduce(
+      (sum, s) => sum + calcHours(s.start_time, s.end_time, s.break_minutes),
+      0
+    );
+    return {
+      month:    monthLabel(ym),
+      hours:    Math.round(hours * 10) / 10,
+      approved: approvedInMonth.length,
+      pending:  inMonth.filter((s) => s.status === "pending_assistant" || s.status === "pending_apotheek").length,
+      denied:   inMonth.filter((s) => s.status === "denied").length,
+    };
+  });
+
+  const counts = { approved: 0, pending: 0, denied: 0 };
+  for (const s of all12) {
+    if (s.status === "approved")                                       counts.approved++;
+    else if (s.status === "pending_assistant" || s.status === "pending_apotheek") counts.pending++;
+    else if (s.status === "denied")                                    counts.denied++;
+  }
+  const statusData: StatusSlice[] = [
+    { status: "Goedgekeurd",    count: counts.approved, color: "#16a34a" },
+    { status: "In behandeling", count: counts.pending,  color: "#d97706" },
+    { status: "Geweigerd",      count: counts.denied,   color: "#dc2626" },
+  ];
+
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-bold text-text mb-6">Dashboard</h1>
+    <div className="p-8 max-w-5xl space-y-8">
+      <h1 className="text-2xl font-bold text-text">Dashboard</h1>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-surface rounded-xl border border-border p-5 shadow-sm">
           <p className="text-sm text-text-muted mb-1">Te bevestigen</p>
           <p className="text-3xl font-bold text-text">{pendingCount}</p>
@@ -148,7 +215,7 @@ export default async function AssistentDashboardPage() {
       </div>
 
       {pendingCount > 0 && (
-        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
           Je hebt <strong>{pendingCount}</strong> shift
           {pendingCount > 1 ? "s" : ""} die wacht
           {pendingCount === 1 ? "" : "en"} op jouw bevestiging.{" "}
@@ -157,6 +224,12 @@ export default async function AssistentDashboardPage() {
           </a>
         </div>
       )}
+
+      {/* Charts */}
+      <AssistentDashboardCharts
+        monthlyData={monthlyData}
+        statusData={statusData}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { sendWelcomeEmail } from '@/lib/email'
 
 type ActionResult<T = void> = { error: string } | { data: T }
@@ -138,10 +139,12 @@ export async function updateMyUserProfile(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd.' }
 
-  const { error } = await supabase
+  const effectiveId = await getEffectiveUserId(user.id)
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('users')
     .update({ ...profile, updated_at: new Date().toISOString() })
-    .eq('id', user.id)
+    .eq('id', effectiveId)
   if (error) return { error: error.message }
 
   revalidatePath('/assistent/profiel')

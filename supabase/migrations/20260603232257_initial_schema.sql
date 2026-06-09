@@ -187,7 +187,7 @@ create policy "assistant can read own links"
 -- ============================================================
 create table public.shifts (
   id            uuid    primary key default gen_random_uuid(),
-  assistant_id  uuid    not null references public.users(id),
+  assistant_id  uuid    references public.users(id),
   location_id   uuid    not null references public.locations(id),
   date          date    not null,
   start_time    time    not null,

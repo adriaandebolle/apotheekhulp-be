@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getEffectiveUserId } from "@/lib/effective-user-id";
 import AgendaAbonnementClient from "./AgendaAbonnementClient";
 
 export default async function AgendaAbonnementPage() {
@@ -11,11 +12,12 @@ export default async function AgendaAbonnementPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const effectiveId = await getEffectiveUserId(user.id);
   const admin = createAdminClient();
   const { data: userRow } = await admin
     .from("users")
     .select("ical_token")
-    .eq("id", user.id)
+    .eq("id", effectiveId)
     .single();
 
   const hdrs = await headers();

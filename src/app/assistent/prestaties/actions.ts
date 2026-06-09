@@ -1,13 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function confirmShift(id: string): Promise<void> {
-  const supabase = await createClient()
+  const admin = createAdminClient()
 
   // Look up the shift to find assistant_id + location_id for auto-confirm check
-  const { data: shift } = await supabase
+  const { data: shift } = await admin
     .from('shifts')
     .select('assistant_id, location_id')
     .eq('id', id)
@@ -15,7 +15,7 @@ export async function confirmShift(id: string): Promise<void> {
 
   let newStatus = 'pending_apotheek'
   if (shift) {
-    const { data: link } = await supabase
+    const { data: link } = await admin
       .from('links')
       .select('auto_confirm_apotheek')
       .eq('assistant_id', shift.assistant_id)
@@ -25,7 +25,7 @@ export async function confirmShift(id: string): Promise<void> {
     if (link?.auto_confirm_apotheek) newStatus = 'approved'
   }
 
-  const { error } = await supabase
+  const { error } = await admin
     .from('shifts')
     .update({ status: newStatus })
     .eq('id', id)
@@ -34,8 +34,8 @@ export async function confirmShift(id: string): Promise<void> {
 }
 
 export async function declineShift(id: string): Promise<void> {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const admin = createAdminClient()
+  const { error } = await admin
     .from('shifts')
     .update({ status: 'denied' })
     .eq('id', id)

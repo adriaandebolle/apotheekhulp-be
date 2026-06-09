@@ -36,7 +36,7 @@ export default function KalenderAssistentClient({ shifts }: { shifts: ShiftData[
     const c = STATUS_COLOR[s.status] ?? STATUS_COLOR.pending_assistant
     return {
       id:              s.id,
-      title:           `${s.startTime.slice(0, 5)} ${s.pharmacyName}`,
+      title:           `${s.pharmacyName} – ${s.locationName}`,
       start:           `${s.date}T${s.startTime}`,
       end:             `${s.date}T${s.endTime}`,
       backgroundColor: c.bg,

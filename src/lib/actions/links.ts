@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getEffectiveUserId } from '@/lib/effective-user-id'
 
 type ActionResult<T = void> = { error: string } | { data: T }
 
@@ -11,6 +12,7 @@ export async function setMyAutoConfirm(linkId: string, value: boolean): Promise<
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd.' }
 
+  const effectiveId = await getEffectiveUserId(user.id)
   const admin = createAdminClient()
   // Verify ownership before updating
   const { data: link } = await admin
@@ -19,7 +21,7 @@ export async function setMyAutoConfirm(linkId: string, value: boolean): Promise<
     .eq('id', linkId)
     .is('deleted_at', null)
     .single()
-  if (!link || link.assistant_id !== user.id) return { error: 'Geen toegang.' }
+  if (!link || link.assistant_id !== effectiveId) return { error: 'Geen toegang.' }
 
   const { error } = await admin
     .from('links')

@@ -37,7 +37,7 @@ export type PharmacyOption = {
 
 export type ShiftData = {
   id: string
-  assistantId: string
+  assistantId: string | null
   locationId: string
   date: string
   startTime: string
