@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1065.0",
     "@fullcalendar/core": "^6.1.20",
     "@fullcalendar/daygrid": "^6.1.20",
     "@fullcalendar/interaction": "^6.1.20",
@@ -22,9 +23,7 @@
     "@tiptap/pm": "^3.26.0",
     "@tiptap/react": "^3.26.0",
     "@tiptap/starter-kit": "^3.26.0",
-    "@types/nodemailer": "^8.0.0",
     "next": "16.2.7",
-    "nodemailer": "^8.0.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1"

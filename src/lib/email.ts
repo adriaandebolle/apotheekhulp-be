@@ -1,18 +1,12 @@
-import nodemailer from "nodemailer";
+import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_SMTP_HOST ?? "127.0.0.1",
-  port: parseInt(process.env.EMAIL_SMTP_PORT ?? "54325", 10),
-  secure: process.env.EMAIL_SMTP_SECURE === "true",
-  auth: process.env.EMAIL_SMTP_USER
-    ? { user: process.env.EMAIL_SMTP_USER, pass: process.env.EMAIL_SMTP_PASS }
-    : undefined,
-});
+const ses = new SESClient({ region: "eu-west-1" });
 
 const FROM = process.env.EMAIL_FROM ?? "noreply@apotheekhulp.be";
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://app.apotheekhulp.be";
 const REDIRECT_TO = process.env.EMAIL_REDIRECT_TO;
+const IS_DEV = process.env.NODE_ENV === "development";
 
 function resolveRecipient(original: string): {
   to: string;
@@ -21,6 +15,33 @@ function resolveRecipient(original: string): {
   if (REDIRECT_TO)
     return { to: REDIRECT_TO, subjectPrefix: `[TEST → ${original}] ` };
   return { to: original, subjectPrefix: "" };
+}
+
+async function send(params: {
+  to: string;
+  replyTo?: string;
+  subject: string;
+  html: string;
+}) {
+  const { to: resolvedTo, subjectPrefix } = resolveRecipient(params.to);
+  const subject = subjectPrefix + params.subject;
+
+  if (IS_DEV) {
+    console.log(`[email] To: ${resolvedTo} | Subject: ${subject}`);
+    return;
+  }
+
+  await ses.send(
+    new SendEmailCommand({
+      Source: FROM,
+      Destination: { ToAddresses: [resolvedTo] },
+      ReplyToAddresses: params.replyTo ? [params.replyTo] : undefined,
+      Message: {
+        Subject: { Data: subject, Charset: "UTF-8" },
+        Body: { Html: { Data: params.html, Charset: "UTF-8" } },
+      },
+    }),
+  );
 }
 
 // ── Inline-style converter (email clients ignore stylesheets) ─────────────────
@@ -177,16 +198,12 @@ export async function sendWelcomeEmail(
   password: string,
   role: "apotheek" | "assistent",
 ) {
-  const baseSubject =
-    role === "assistent"
-      ? "Welkom bij Apotheekhulp"
-      : "Uw Apotheekhulp account is aangemaakt";
-  const { to: resolvedTo, subjectPrefix } = resolveRecipient(to);
-
-  await transporter.sendMail({
-    from: FROM,
-    to: resolvedTo,
-    subject: subjectPrefix + baseSubject,
+  await send({
+    to,
+    subject:
+      role === "assistent"
+        ? "Welkom bij Apotheekhulp"
+        : "Uw Apotheekhulp account is aangemaakt",
     html: welcomeHtml(to, password, role),
   });
 }
@@ -236,14 +253,10 @@ export async function sendContactNotification(data: {
     <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px 20px;font-size:14px;color:#334155;line-height:1.7;white-space:pre-wrap;">${escHtml(data.bericht)}</div>
   `);
 
-  const { to: resolvedTo, subjectPrefix } =
-    resolveRecipient("info@apotheekhulp.be");
-
-  await transporter.sendMail({
-    from: FROM,
-    to: resolvedTo,
+  await send({
+    to: "info@apotheekhulp.be",
     replyTo: data.email,
-    subject: subjectPrefix + `Contactbericht van ${data.naam}`,
+    subject: `Contactbericht van ${data.naam}`,
     html,
   });
 }
@@ -270,12 +283,9 @@ export async function sendContactConfirmation(to: string, naam: string) {
     </p>
   `);
 
-  const { to: resolvedTo, subjectPrefix } = resolveRecipient(to);
-
-  await transporter.sendMail({
-    from: FROM,
-    to: resolvedTo,
-    subject: subjectPrefix + "We hebben uw bericht ontvangen — Apotheekhulp",
+  await send({
+    to,
+    subject: "We hebben uw bericht ontvangen — Apotheekhulp",
     html,
   });
 }
@@ -313,14 +323,8 @@ export async function sendBerichtNotification(
   `);
 
   await Promise.allSettled(
-    to.map((address) => {
-      const { to: resolvedTo, subjectPrefix } = resolveRecipient(address);
-      return transporter.sendMail({
-        from: FROM,
-        to: resolvedTo,
-        subject: subjectPrefix + `Nieuw bericht: ${title}`,
-        html,
-      });
-    }),
+    to.map((address) =>
+      send({ to: address, subject: `Nieuw bericht: ${title}`, html }),
+    ),
   );
 }
