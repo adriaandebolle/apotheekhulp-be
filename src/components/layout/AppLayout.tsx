@@ -5,21 +5,34 @@ import { IMPERSONATION_COOKIE, type Impersonation } from '@/lib/impersonation-ty
 import { Sidebar } from './Sidebar'
 import { ImpersonationBanner } from '@/components/admin/ImpersonationBanner'
 
+async function getUnreadMessageCount(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+): Promise<number> {
+  const [{ count: total }, { count: read }] = await Promise.all([
+    supabase.from('messages').select('*', { count: 'exact', head: true }),
+    supabase.from('message_reads').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+  ])
+  return Math.max(0, (total ?? 0) - (read ?? 0))
+}
+
 async function getBadges(
   supabase: Awaited<ReturnType<typeof createClient>>,
   role: 'admin' | 'assistent' | 'apotheek',
   userId: string,
 ): Promise<Partial<Record<string, number>>> {
   if (role === 'assistent') {
-    const [{ count: prestaties }, { count: facturen }] = await Promise.all([
+    const [{ count: prestaties }, { count: facturen }, unreadMessages] = await Promise.all([
       supabase.from('shifts').select('*', { count: 'exact', head: true })
         .eq('assistant_id', userId).eq('status', 'pending_assistant'),
       supabase.from('shifts').select('*', { count: 'exact', head: true })
         .eq('assistant_id', userId).eq('status', 'approved'),
+      getUnreadMessageCount(supabase, userId),
     ])
     return {
       '/assistent/prestaties': prestaties ?? 0,
       '/assistent/facturen':   facturen   ?? 0,
+      '/assistent/berichten':  unreadMessages,
     }
   }
   if (role === 'apotheek') {
@@ -27,12 +40,17 @@ async function getBadges(
     const { data: locations } = await supabase
       .from('locations').select('id').eq('pharmacy_id', userId)
     const locationIds = (locations ?? []).map(l => l.id)
-    if (!locationIds.length) return {}
-    const [{ count: prestaties }] = await Promise.all([
-      supabase.from('shifts').select('*', { count: 'exact', head: true })
-        .in('location_id', locationIds).eq('status', 'pending_apotheek'),
+    const [prestaties, unreadMessages] = await Promise.all([
+      locationIds.length
+        ? supabase.from('shifts').select('*', { count: 'exact', head: true })
+            .in('location_id', locationIds).eq('status', 'pending_apotheek')
+        : Promise.resolve({ count: 0 }),
+      getUnreadMessageCount(supabase, userId),
     ])
-    return { '/apotheek/prestaties': prestaties ?? 0 }
+    return {
+      '/apotheek/prestaties': (prestaties as { count: number | null }).count ?? 0,
+      '/apotheek/berichten':  unreadMessages,
+    }
   }
   return {}
 }

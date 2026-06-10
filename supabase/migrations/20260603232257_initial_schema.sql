@@ -248,6 +248,31 @@ create policy "assistants can read messages"
   on public.messages for select
   using ((select role from public.users where id = auth.uid()) = 'assistent');
 
+create policy "pharmacies can read messages"
+  on public.messages for select
+  using ((select role from public.users where id = auth.uid()) = 'apotheek');
+
+
+-- ============================================================
+-- message_reads  (per-user read tracking for badge counters)
+-- ============================================================
+create table public.message_reads (
+  user_id     uuid        not null references public.users(id) on delete cascade,
+  message_id  uuid        not null references public.messages(id) on delete cascade,
+  read_at     timestamptz not null default now(),
+  primary key (user_id, message_id)
+);
+
+alter table public.message_reads enable row level security;
+
+create policy "users can read own message reads"
+  on public.message_reads for select
+  using (auth.uid() = user_id);
+
+create policy "users can insert own message reads"
+  on public.message_reads for insert
+  with check (auth.uid() = user_id);
+
 
 -- ============================================================
 -- platform_config  (singleton — one row, id always = 1)
