@@ -100,6 +100,9 @@ export default function ShiftEditModal({
           <div>
             <Label htmlFor="edit-end">Einduur</Label>
             <Input id="edit-end" name="end_time" type="time" defaultValue={shift.endTime.slice(0, 5)} required />
+            {shift.endTime < shift.startTime && (
+              <p className="text-xs text-text-muted mt-1">Eindigt volgende dag</p>
+            )}
           </div>
         </div>
 

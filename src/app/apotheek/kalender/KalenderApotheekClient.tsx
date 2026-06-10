@@ -18,6 +18,12 @@ import type {
 } from "./page";
 import ShiftAddModal from "./ShiftAddModal";
 
+function nextDay(isoDate: string): string {
+  const d = new Date(isoDate + 'T12:00:00')
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
 const STATUS_COLOR: Record<
   string,
   { bg: string; border: string; text: string }
@@ -59,11 +65,12 @@ export default function KalenderApotheekClient({
 
   const events: EventInput[] = shifts.map((s) => {
     const c = STATUS_COLOR[s.status] ?? STATUS_COLOR.pending_assistant;
+    const isOvernight = s.endTime < s.startTime;
     return {
       id:              s.id,
       title:           s.assistantName,
       start:           `${s.date}T${s.startTime}`,
-      end:             `${s.date}T${s.endTime}`,
+      end:             isOvernight ? `${nextDay(s.date)}T${s.endTime}` : `${s.date}T${s.endTime}`,
       backgroundColor: c.bg,
       borderColor:     c.border,
       textColor:       c.text,

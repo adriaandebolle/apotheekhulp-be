@@ -14,6 +14,12 @@ import ShiftAddModal from './ShiftAddModal'
 import ShiftEditModal from './ShiftEditModal'
 import BulkShiftModal from './BulkShiftModal'
 
+function nextDay(isoDate: string): string {
+  const d = new Date(isoDate + 'T12:00:00')
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
 // ── Status styling ─────────────────────────────────────────────────────────────
 
 const STATUS_OPACITY: Record<string, number> = {
@@ -111,11 +117,12 @@ export default function KalenderClient({
       const bg       = hexWithOpacity(s.color, opacity)
       const isDashed = s.status !== 'approved'
       const label    = s.assistantId ? s.assistantName : 'Niet toegewezen'
+      const isOvernight = s.endTime < s.startTime
       return {
         id:              s.id,
         title:           `${label} - ${s.startTime?.slice(0, 5) ?? ''}`,
         start:           `${s.date}T${s.startTime}`,
-        end:             `${s.date}T${s.endTime}`,
+        end:             isOvernight ? `${nextDay(s.date)}T${s.endTime}` : `${s.date}T${s.endTime}`,
         backgroundColor: bg,
         borderColor:     s.color,
         textColor:       opacity < 0.7 ? '#444' : '#fff',

@@ -31,8 +31,6 @@ export async function createShift(
   if (!date)                 return { type: 'error', message: 'Kies een datum.' }
   if (!startTime)            return { type: 'error', message: 'Vul een beginuur in.' }
   if (!endTime)              return { type: 'error', message: 'Vul een einduur in.' }
-  if (startTime >= endTime)  return { type: 'error', message: 'Einduur moet na beginuur liggen.' }
-
   const admin = createAdminClient()
 
   // Verify this location belongs to the pharmacy being impersonated (or the logged-in user).

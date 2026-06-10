@@ -25,8 +25,6 @@ export async function createShift(
   if (!date)        return { type: 'error', message: 'Kies een datum.' }
   if (!startTime)   return { type: 'error', message: 'Vul een beginuur in.' }
   if (!endTime)     return { type: 'error', message: 'Vul een einduur in.' }
-  if (startTime >= endTime) return { type: 'error', message: 'Einduur moet na beginuur liggen.' }
-
   const supabase = createAdminClient()
   const status = await resolveInitialStatus(assistantId, locationId, supabase)
   const { error } = await supabase.from('shifts').insert({
@@ -58,7 +56,6 @@ export async function updateShift(
 
   if (!id)                              return { type: 'error', message: 'Ongeldige shift.' }
   if (!date || !startTime || !endTime)  return { type: 'error', message: 'Vul alle velden in.' }
-  if (startTime >= endTime)             return { type: 'error', message: 'Einduur moet na beginuur liggen.' }
 
   const supabase = createAdminClient()
   const { error } = await supabase
@@ -104,7 +101,6 @@ export async function createBulkShifts(
   if (!locationId)     return { type: 'error', message: 'Kies een locatie.' }
   if (!startTime)      return { type: 'error', message: 'Vul een beginuur in.' }
   if (!endTime)        return { type: 'error', message: 'Vul een einduur in.' }
-  if (startTime >= endTime) return { type: 'error', message: 'Einduur moet na beginuur liggen.' }
 
   const validDates = dates.filter(Boolean)
   if (validDates.length === 0) return { type: 'error', message: 'Voeg minstens één datum toe.' }

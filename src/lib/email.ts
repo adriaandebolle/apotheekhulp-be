@@ -12,6 +12,16 @@ const transporter = nodemailer.createTransport({
 const FROM = process.env.EMAIL_FROM ?? "noreply@apotheekhulp.be";
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "https://app.apotheekhulp.be";
+const REDIRECT_TO = process.env.EMAIL_REDIRECT_TO;
+
+function resolveRecipient(original: string): {
+  to: string;
+  subjectPrefix: string;
+} {
+  if (REDIRECT_TO)
+    return { to: REDIRECT_TO, subjectPrefix: `[TEST → ${original}] ` };
+  return { to: original, subjectPrefix: "" };
+}
 
 // ── Inline-style converter (email clients ignore stylesheets) ─────────────────
 
@@ -167,15 +177,16 @@ export async function sendWelcomeEmail(
   password: string,
   role: "apotheek" | "assistent",
 ) {
-  const subject =
+  const baseSubject =
     role === "assistent"
       ? "Welkom bij Apotheekhulp"
       : "Uw Apotheekhulp account is aangemaakt";
+  const { to: resolvedTo, subjectPrefix } = resolveRecipient(to);
 
   await transporter.sendMail({
     from: FROM,
-    to,
-    subject,
+    to: resolvedTo,
+    subject: subjectPrefix + baseSubject,
     html: welcomeHtml(to, password, role),
   });
 }
@@ -225,11 +236,14 @@ export async function sendContactNotification(data: {
     <div style="background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px 20px;font-size:14px;color:#334155;line-height:1.7;white-space:pre-wrap;">${escHtml(data.bericht)}</div>
   `);
 
+  const { to: resolvedTo, subjectPrefix } =
+    resolveRecipient("info@apotheekhulp.be");
+
   await transporter.sendMail({
     from: FROM,
-    to: "info@apotheekhulp.be",
+    to: resolvedTo,
     replyTo: data.email,
-    subject: `Contactbericht van ${data.naam}`,
+    subject: subjectPrefix + `Contactbericht van ${data.naam}`,
     html,
   });
 }
@@ -256,10 +270,12 @@ export async function sendContactConfirmation(to: string, naam: string) {
     </p>
   `);
 
+  const { to: resolvedTo, subjectPrefix } = resolveRecipient(to);
+
   await transporter.sendMail({
     from: FROM,
-    to,
-    subject: "We hebben uw bericht ontvangen — Apotheekhulp",
+    to: resolvedTo,
+    subject: subjectPrefix + "We hebben uw bericht ontvangen — Apotheekhulp",
     html,
   });
 }
@@ -297,13 +313,14 @@ export async function sendBerichtNotification(
   `);
 
   await Promise.allSettled(
-    to.map((address) =>
-      transporter.sendMail({
+    to.map((address) => {
+      const { to: resolvedTo, subjectPrefix } = resolveRecipient(address);
+      return transporter.sendMail({
         from: FROM,
-        to: address,
-        subject: `Nieuw bericht: ${title}`,
+        to: resolvedTo,
+        subject: subjectPrefix + `Nieuw bericht: ${title}`,
         html,
-      }),
-    ),
+      });
+    }),
   );
 }
