@@ -105,24 +105,37 @@ export default async function FacturenApotheekPage({
     [u.first_name, u.last_name].filter(Boolean).join(' '),
   ]))
 
+  const allLocationIds = [...new Set((rawLocations ?? []).map(l => l.id))]
+
+  const { data: allUninvoicedShifts } = allLocationIds.length > 0
+    ? await supabase
+        .from('shifts')
+        .select('id, assistant_id, location_id, date, start_time, end_time, break_minutes')
+        .eq('status', 'approved')
+        .is('deleted_at', null)
+        .is('apotheek_invoice_id', null)
+        .gte('date', monthStart)
+        .lte('date', monthEnd)
+        .in('location_id', allLocationIds)
+    : { data: [] }
+
+  type UninvoicedShift = NonNullable<typeof allUninvoicedShifts>[number]
+  const shiftsByLocation = new Map<string, UninvoicedShift[]>()
+  for (const s of allUninvoicedShifts ?? []) {
+    const arr = shiftsByLocation.get(s.location_id) ?? []
+    arr.push(s)
+    shiftsByLocation.set(s.location_id, arr)
+  }
+
   const uninvoicedRows: ApotheekUninvoicedRow[] = []
 
   for (const p of rawPharmacies ?? []) {
     const locationIds = locationsByPharmacy.get(p.user_id)
     if (!locationIds || locationIds.length === 0) continue
 
-    // Fetch uninvoiced approved shifts for this pharmacy's locations
-    const { data: rawShifts } = await supabase
-      .from('shifts')
-      .select('id, assistant_id, location_id, date, start_time, end_time, break_minutes')
-      .eq('status', 'approved')
-      .is('deleted_at', null)
-      .is('apotheek_invoice_id', null)
-      .gte('date', monthStart)
-      .lte('date', monthEnd)
-      .in('location_id', locationIds)
+    const rawShifts = locationIds.flatMap(lid => shiftsByLocation.get(lid) ?? [])
 
-    if (!rawShifts || rawShifts.length === 0) continue
+    if (rawShifts.length === 0) continue
 
     const vatLiable = p.vat_liable ?? true
     let totalHours = 0

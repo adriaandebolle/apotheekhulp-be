@@ -45,6 +45,29 @@ export async function createLink(data: {
   if (!data.assistant_id || !data.location_id) return { error: 'Assistent en locatie zijn verplicht.' }
 
   const admin = await createClient()
+
+  // Check for an existing link (including soft-deleted) to give a clear error or restore it.
+  const { data: existing } = await admin
+    .from('links')
+    .select('id, deleted_at')
+    .eq('assistant_id', data.assistant_id)
+    .eq('location_id', data.location_id)
+    .maybeSingle()
+
+  if (existing) {
+    if (!existing.deleted_at) {
+      return { error: 'Er bestaat al een actieve koppeling tussen deze assistent en apotheek.' }
+    }
+    // Restore soft-deleted link with updated data.
+    const { error } = await admin
+      .from('links')
+      .update({ ...data, deleted_at: null })
+      .eq('id', existing.id)
+    if (error) return { error: error.message }
+    revalidatePath('/admin/gebruikers/assistenten')
+    return { data: { id: existing.id } }
+  }
+
   const { data: row, error } = await admin
     .from('links')
     .insert(data)
