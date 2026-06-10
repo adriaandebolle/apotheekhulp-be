@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { startImpersonation } from '@/lib/impersonation'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
 import { Badge } from '@/components/ui/Badge'
@@ -27,7 +27,7 @@ function SortHeader({ label, field, sort, dir, q }: { label: string; field: Sort
 export default async function ApotheekListPage({ searchParams }: Props) {
   const { q = '', sort = 'company_name', dir = 'asc' } = await searchParams
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const [{ data: { users: authUsers } }, { data: rows }, { data: profiles }] = await Promise.all([
     admin.auth.admin.listUsers({ perPage: 1000 }),
     admin.from('users').select('id, phone, is_active').eq('role', 'apotheek'),

@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 type ActionResult<T = void> = { error: string } | { data: T }
 
@@ -18,7 +18,7 @@ export async function createInvoice(input: {
   if (!input.invoiceNumber.trim()) return { error: 'Factuurnummer is verplicht.' }
   if (!input.shiftIds.length)      return { error: 'Selecteer minstens één shift.' }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   const { data: invoice, error: insertError } = await admin
     .from('invoices')
@@ -77,7 +77,7 @@ export async function updateInvoiceStatus(
   id: string,
   status: 'te_betalen' | 'betaald',
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('invoices')
     .update({ status, updated_at: new Date().toISOString() })
@@ -90,7 +90,7 @@ export async function updateInvoiceStatus(
 }
 
 export async function deleteInvoice(id: string): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   // ON DELETE SET NULL handles the FK on shifts automatically
   const { error } = await admin.from('invoices').delete().eq('id', id)
   if (error) return { error: error.message }

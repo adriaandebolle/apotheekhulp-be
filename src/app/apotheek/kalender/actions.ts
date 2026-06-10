@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { resolveInitialStatus } from '@/lib/actions/shifts'
 
@@ -31,7 +30,7 @@ export async function createShift(
   if (!date)                 return { type: 'error', message: 'Kies een datum.' }
   if (!startTime)            return { type: 'error', message: 'Vul een beginuur in.' }
   if (!endTime)              return { type: 'error', message: 'Vul een einduur in.' }
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   // Verify this location belongs to the pharmacy being impersonated (or the logged-in user).
   const { data: loc } = await admin

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getEffectiveUserId } from "@/lib/effective-user-id";
 import BeschikbaarheidAssistentClient from "./BeschikbaarheidAssistentClient";
 
@@ -12,7 +11,7 @@ export default async function AssistentOnbeschikbaarheidPage() {
   if (!user) redirect("/login");
 
   const effectiveId = await getEffectiveUserId(user.id);
-  const admin = createAdminClient();
+  const admin = await createClient();
   const { data: rows } = await admin
     .from("assistant_availability")
     .select("day_of_week")

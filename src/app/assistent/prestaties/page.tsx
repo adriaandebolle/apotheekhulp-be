@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import PrestatiesAssistentClient, { type AssistentShift } from './PrestatiesAssistentClient'
 
@@ -25,7 +24,7 @@ export default async function AssistentPrestatiesPage({
   const pageHist = Math.max(0, parseInt(params.ph ?? '0', 10) || 0)
 
   // Admin client needed because pharmacy_profiles has no RLS policy for assistants.
-  const adminSupabase = createAdminClient()
+  const adminSupabase = await createClient()
 
   const [pendingResult, histResult] = await Promise.all([
     adminSupabase.from('shifts').select(SHIFT_SELECT)

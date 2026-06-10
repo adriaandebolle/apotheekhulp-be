@@ -360,3 +360,66 @@ create policy "admins can manage invoices"
 create policy "assistent can read own invoices"
   on public.invoices for select
   using (type = 'assistent' and recipient_id = auth.uid());
+
+-- ── iCal public RPC ───────────────────────────────────────────────────────────
+-- Called by calendar apps without a user session; uses SECURITY DEFINER to
+-- bypass RLS while exposing only the data needed for a calendar feed.
+-- Returns >= 1 row for a valid ical_token (shift_id NULL when no shifts yet),
+-- or 0 rows for an unknown token, so the caller can distinguish the two cases.
+create or replace function public.get_ical_shifts(p_token text)
+returns table (
+  shift_id       uuid,
+  shift_date     text,
+  start_time     text,
+  end_time       text,
+  break_minutes  int,
+  status         text,
+  location_name  text,
+  company_name   text,
+  user_first     text,
+  user_last      text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_user_id uuid;
+begin
+  begin
+    select id into v_user_id
+    from public.users
+    where ical_token = p_token::uuid
+      and role = 'assistent'
+    limit 1;
+  exception when others then
+    return; -- malformed UUID
+  end;
+
+  if v_user_id is null then return; end if;
+
+  return query
+    select
+      s.id,
+      s.date,
+      s.start_time,
+      s.end_time,
+      s.break_minutes,
+      s.status,
+      l.name,
+      pp.company_name,
+      u.first_name,
+      u.last_name
+    from public.users u
+    left join public.shifts s
+      on  s.assistant_id = u.id
+      and s.status in ('approved', 'pending_apotheek')
+      and s.deleted_at is null
+    left join public.locations l on l.id = s.location_id
+    left join public.pharmacy_profiles pp on pp.user_id = l.pharmacy_id
+    where u.id = v_user_id
+    order by s.date;
+end;
+$$;
+
+grant execute on function public.get_ical_shifts(text) to anon;

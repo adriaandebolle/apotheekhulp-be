@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import KalenderWrapper from './KalenderWrapper'
 
 const ASSISTENT_COLORS = [
@@ -51,7 +51,7 @@ export type ShiftData = {
 }
 
 export default async function KalenderPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { start, end } = dateRange()
 
   const [{ data: rawAssistants }, { data: rawShifts }, { data: rawPharmacies }] = await Promise.all([

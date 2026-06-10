@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from '@/lib/supabase/server'
 
 type ActionResult<T = void> = { error: string } | { data: T };
 
@@ -21,7 +21,7 @@ export type PlatformConfig = {
 };
 
 export async function getPlatformConfig(): Promise<PlatformConfig> {
-  const admin = createAdminClient();
+  const admin = await createClient();
   const { data } = await admin
     .from("platform_config")
     .select(
@@ -47,7 +47,7 @@ export async function getPlatformConfig(): Promise<PlatformConfig> {
 export async function updatePlatformConfig(
   config: Partial<PlatformConfig>,
 ): Promise<ActionResult> {
-  const admin = createAdminClient();
+  const admin = await createClient();
   const { error } = await admin
     .from("platform_config")
     .update({ ...config, updated_at: new Date().toISOString() })

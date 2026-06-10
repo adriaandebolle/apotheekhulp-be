@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { StatCard } from '@/components/ui/Card'
 import DashboardCharts from './DashboardCharts'
 import type { RevenuePoint } from './RevenueChart'
@@ -21,7 +21,7 @@ function monthLabel(ym: string) {
 }
 
 export default async function DashboardPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
 
   const now = new Date()
   const thisMonth = now.toISOString().slice(0, 7)

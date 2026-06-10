@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { ApotheekDocument } from '@/lib/pdf/apotheek-pdf'
 import type { ApotheekPDFData, ApotheekPDFShift } from '@/lib/pdf/apotheek-pdf'
 
@@ -46,7 +45,7 @@ export async function GET(request: NextRequest) {
   const { data: { user } } = await userClient.auth.getUser()
   if (!user) return new Response('Niet ingelogd.', { status: 401 })
 
-  const admin = createAdminClient()
+  const admin = userClient
   const { data: me } = await admin.from('users').select('role').eq('id', user.id).single()
   if (me?.role !== 'admin') return new Response('Geen toegang.', { status: 403 })
 

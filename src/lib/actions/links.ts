@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 
 type ActionResult<T = void> = { error: string } | { data: T }
@@ -13,7 +12,7 @@ export async function setMyAutoConfirm(linkId: string, value: boolean): Promise<
   if (!user) return { error: 'Niet ingelogd.' }
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
   // Verify ownership before updating
   const { data: link } = await admin
     .from('links')
@@ -45,7 +44,7 @@ export async function createLink(data: {
 }): Promise<ActionResult<{ id: string }>> {
   if (!data.assistant_id || !data.location_id) return { error: 'Assistent en locatie zijn verplicht.' }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { data: row, error } = await admin
     .from('links')
     .insert(data)
@@ -68,7 +67,7 @@ export async function updateLink(
     auto_confirm_apotheek?: boolean
   },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin.from('links').update(data).eq('id', id)
   if (error) return { error: error.message }
 
@@ -77,7 +76,7 @@ export async function updateLink(
 }
 
 export async function deleteLink(id: string): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('links')
     .update({ deleted_at: new Date().toISOString() })

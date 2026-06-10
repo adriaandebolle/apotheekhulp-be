@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getEffectiveUserId } from "@/lib/effective-user-id";
 import { calcHours } from "@/lib/pdf/pdf-utils";
 import { Badge } from "@/components/ui/Badge";
@@ -71,7 +70,7 @@ export default async function ApotheekPrestatiesPage({
   const params = await searchParams;
   const month = params.month ?? new Date().toISOString().slice(0, 7);
 
-  const admin = createAdminClient();
+  const admin = await createClient();
 
   const { data: rawLocations } = await admin
     .from("locations")

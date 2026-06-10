@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getEffectiveUserId } from "@/lib/effective-user-id";
 import { calcHours } from "@/lib/pdf/pdf-utils";
 import ApotheekDashboardCharts from "./DashboardCharts";
@@ -38,7 +37,7 @@ export default async function ApotheekDashboardPage() {
   if (!user) redirect("/login");
 
   const effectiveId = await getEffectiveUserId(user.id);
-  const admin = createAdminClient();
+  const admin = await createClient();
 
   const { data: rawLocations } = await admin
     .from("locations")

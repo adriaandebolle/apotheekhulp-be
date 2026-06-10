@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 type ShiftStatus = 'pending_assistant' | 'pending_apotheek' | 'approved'
 
@@ -46,7 +46,7 @@ export async function createShift(data: {
     return { error: 'Assistent, locatie, datum en uren zijn verplicht.' }
   }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const initialStatus = await resolveInitialStatus(data.assistant_id, data.location_id, admin)
 
   const { data: row, error } = await admin
@@ -82,7 +82,7 @@ export async function updateShift(
     notes?: string
   },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('shifts')
     .update({ ...data, updated_at: new Date().toISOString() })
@@ -95,7 +95,7 @@ export async function updateShift(
 }
 
 export async function deleteShift(id: string): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('shifts')
     .update({ deleted_at: new Date().toISOString() })
@@ -108,7 +108,7 @@ export async function deleteShift(id: string): Promise<ActionResult> {
 }
 
 export async function updateShiftStatus(id: string, newStatus: ShiftStatus): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   const { data: shift, error: fetchError } = await admin
     .from('shifts')

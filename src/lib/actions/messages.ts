@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { sendBerichtNotification } from '@/lib/email'
 
 type ActionResult<T = void> = { error: string } | { data: T }
@@ -15,7 +15,7 @@ export async function createMessage(data: {
 }): Promise<ActionResult<{ id: string }>> {
   if (!data.title?.trim() || !data.body?.trim()) return { error: 'Titel en inhoud zijn verplicht.' }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   // Only one popup at a time — clear others first
   if (data.show_as_popup) {
@@ -68,7 +68,7 @@ export async function updateMessage(
     notify_pharmacies?: boolean
   },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   if (data.show_as_popup) {
     await admin.from('messages').update({ show_as_popup: false }).eq('show_as_popup', true).neq('id', id)
@@ -101,7 +101,7 @@ export async function updateMessage(
 }
 
 export async function deleteMessage(id: string): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin.from('messages').delete().eq('id', id)
   if (error) return { error: error.message }
 

@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 
 type ActionResult<T = void> = { error: string } | { data: T }
@@ -26,7 +25,7 @@ export async function updateMyAssistantProfile(
   if (!user) return { error: 'Niet ingelogd.' }
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('assistant_profiles')
     .upsert({ user_id: effectiveId, ...profile, updated_at: new Date().toISOString() })
@@ -51,7 +50,7 @@ export async function upsertAssistantProfile(
     invoice_next_number?: number
   },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('assistant_profiles')
     .upsert({ user_id: userId, ...profile, updated_at: new Date().toISOString() })

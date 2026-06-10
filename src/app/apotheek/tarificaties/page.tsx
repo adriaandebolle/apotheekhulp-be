@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from '@/lib/supabase/server'
 import { Badge } from "@/components/ui/Badge";
 
 function formatDate(iso: string) {
@@ -10,7 +10,7 @@ function formatDate(iso: string) {
 }
 
 export default async function TarificatiesPage() {
-  const supabase = createAdminClient();
+  const supabase = await createClient();
   const { data: messages } = await supabase
     .from("messages")
     .select("id, title, body, show_as_popup, created_at")

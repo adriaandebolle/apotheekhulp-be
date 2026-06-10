@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { resolveInitialStatus } from '@/lib/actions/shifts'
 
 export type ShiftFormState =
@@ -25,7 +25,7 @@ export async function createShift(
   if (!date)        return { type: 'error', message: 'Kies een datum.' }
   if (!startTime)   return { type: 'error', message: 'Vul een beginuur in.' }
   if (!endTime)     return { type: 'error', message: 'Vul een einduur in.' }
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const status = await resolveInitialStatus(assistantId, locationId, supabase)
   const { error } = await supabase.from('shifts').insert({
     assistant_id:   assistantId,
@@ -57,7 +57,7 @@ export async function updateShift(
   if (!id)                              return { type: 'error', message: 'Ongeldige shift.' }
   if (!date || !startTime || !endTime)  return { type: 'error', message: 'Vul alle velden in.' }
 
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('shifts')
     .update({ date, start_time: startTime, end_time: endTime, break_minutes: breakMinutes })
@@ -71,7 +71,7 @@ export async function updateShift(
 }
 
 export async function approveShift(id: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('shifts').update({ status: 'approved' }).eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/admin/kalender')
@@ -79,7 +79,7 @@ export async function approveShift(id: string): Promise<void> {
 }
 
 export async function denyShift(id: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { error } = await supabase.from('shifts').update({ status: 'denied' }).eq('id', id)
   if (error) throw new Error(error.message)
   revalidatePath('/admin/kalender')
@@ -105,7 +105,7 @@ export async function createBulkShifts(
   const validDates = dates.filter(Boolean)
   if (validDates.length === 0) return { type: 'error', message: 'Voeg minstens één datum toe.' }
 
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const status = await resolveInitialStatus(assistantId, locationId, supabase)
   const { error } = await supabase.from('shifts').insert(
     validDates.map(date => ({
@@ -123,7 +123,7 @@ export async function createBulkShifts(
 }
 
 export async function deleteShift(id: string): Promise<void> {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { error } = await supabase
     .from('shifts')
     .update({ deleted_at: new Date().toISOString() })

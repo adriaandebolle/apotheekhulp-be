@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { sendWelcomeEmail } from '@/lib/email'
 
@@ -18,7 +17,7 @@ export async function createAssistant(formData: FormData): Promise<ActionResult<
 
   const sendWelcome = formData.has('send_welcome_email')
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
@@ -65,7 +64,7 @@ export async function createPharmacy(formData: FormData): Promise<ActionResult<{
 
   const sendWelcome = formData.has('send_welcome_email')
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { data, error } = await admin.auth.admin.createUser({
     email,
     password,
@@ -107,7 +106,7 @@ export async function updateUserProfile(
   userId: string,
   profile: { first_name?: string; last_name?: string; phone?: string; avatar_url?: string; color?: string; is_active?: boolean },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('users')
     .update({ ...profile, updated_at: new Date().toISOString() })
@@ -120,7 +119,7 @@ export async function updateUserProfile(
 }
 
 export async function setUserActive(userId: string, isActive: boolean): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('users')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
@@ -140,7 +139,7 @@ export async function updateMyUserProfile(
   if (!user) return { error: 'Niet ingelogd.' }
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('users')
     .update({ ...profile, updated_at: new Date().toISOString() })
@@ -154,7 +153,7 @@ export async function updateMyUserProfile(
 export async function adminChangePassword(userId: string, newPassword: string): Promise<ActionResult> {
   if (!newPassword || newPassword.length < 8) return { error: 'Wachtwoord moet minstens 8 tekens bevatten.' }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin.auth.admin.updateUserById(userId, { password: newPassword })
   if (error) return { error: error.message }
 

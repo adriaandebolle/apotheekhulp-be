@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import KalenderAssistentWrapper from './KalenderAssistentWrapper'
 
@@ -31,7 +30,7 @@ export default async function AssistentKalenderPage() {
   if (!user) redirect('/login')
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { start, end } = dateRange()
 
   const { data: rawShifts } = await admin

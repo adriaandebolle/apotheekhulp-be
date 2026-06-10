@@ -1,10 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 export async function confirmShift(id: string): Promise<void> {
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   // Look up the shift to find assistant_id + location_id for auto-confirm check
   const { data: shift } = await admin
@@ -34,7 +34,7 @@ export async function confirmShift(id: string): Promise<void> {
 }
 
 export async function declineShift(id: string): Promise<void> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('shifts')
     .update({ status: 'denied' })

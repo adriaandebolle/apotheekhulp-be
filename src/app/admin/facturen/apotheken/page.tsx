@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import FacturenApotheekClient from './FacturenApotheekClient'
 import { calcHours, BTW_RATE } from '@/lib/pdf/pdf-utils'
 import type { ModalShift } from '../CreateInvoiceModal'
@@ -42,7 +42,7 @@ export default async function FacturenApotheekPage({
   const monthStart = `${month}-01`
   const monthEnd   = new Date(Date.UTC(y, m, 0)).toISOString().split('T')[0]
 
-  const supabase = createAdminClient()
+  const supabase = await createClient()
 
   const [
     { data: rawLinks },

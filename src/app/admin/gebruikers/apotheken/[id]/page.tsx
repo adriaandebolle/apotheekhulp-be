@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { ApotheekDetail } from './ApotheekDetail'
 
 type Props = { params: Promise<{ id: string }> }
 
 export default async function ApotheekDetailPage({ params }: Props) {
   const { id } = await params
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   const [
     { data: authData, error: authError },

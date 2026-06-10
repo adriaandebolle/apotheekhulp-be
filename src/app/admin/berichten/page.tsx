@@ -1,8 +1,8 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import BerichtenClient, { type Message } from './BerichtenClient'
 
 export default async function BerichtenPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('messages')
     .select('id, title, body, show_as_popup, notify_assistants, notify_pharmacies, created_at')

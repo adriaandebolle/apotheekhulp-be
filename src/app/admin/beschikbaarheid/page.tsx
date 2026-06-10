@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import BeschikbaarheidClient from './BeschikbaarheidClient'
 
 export type AssistantRow = {
@@ -8,7 +8,7 @@ export type AssistantRow = {
 }
 
 export default async function BeschikbaarheidPage() {
-  const supabase = createAdminClient()
+  const supabase = await createClient()
 
   const [{ data: rawAssistants }, { data: rawAvailability }] = await Promise.all([
     supabase

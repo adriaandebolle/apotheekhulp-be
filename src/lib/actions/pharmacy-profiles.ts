@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 type ActionResult<T = void> = { error: string } | { data: T }
 
@@ -17,7 +17,7 @@ export async function upsertPharmacyProfile(
     billing_city?:          string
   },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('pharmacy_profiles')
     .upsert({ user_id: userId, ...profile, updated_at: new Date().toISOString() })

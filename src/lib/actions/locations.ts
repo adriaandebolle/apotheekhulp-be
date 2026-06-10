@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 type ActionResult<T = void> = { error: string } | { data: T }
 
@@ -11,7 +11,7 @@ export async function createLocation(
 ): Promise<ActionResult<{ id: string }>> {
   if (!data.name?.trim()) return { error: 'Naam is verplicht.' }
 
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { data: row, error } = await admin
     .from('locations')
     .insert({ pharmacy_id: pharmacyId, name: data.name.trim(), address: data.address ?? null })
@@ -27,7 +27,7 @@ export async function updateLocation(
   id: string,
   data: { name?: string; address?: string; is_active?: boolean },
 ): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin.from('locations').update(data).eq('id', id)
   if (error) return { error: error.message }
 
@@ -36,7 +36,7 @@ export async function updateLocation(
 }
 
 export async function deleteLocation(id: string): Promise<ActionResult> {
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { error } = await admin
     .from('locations')
     .update({ deleted_at: new Date().toISOString() })

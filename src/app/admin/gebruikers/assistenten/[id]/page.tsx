@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 import { getPlatformConfig } from '@/lib/actions/platform-config'
 import { AssistentDetail } from './AssistentDetail'
 
@@ -7,7 +7,7 @@ type Props = { params: Promise<{ id: string }> }
 
 export default async function AssistentDetailPage({ params }: Props) {
   const { id } = await params
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   const [
     { data: { user: authUser }, error: authError },

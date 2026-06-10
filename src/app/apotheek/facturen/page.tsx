@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { Badge } from '@/components/ui/Badge'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
@@ -20,7 +19,7 @@ export default async function ApotheekFacturenPage() {
   if (!user) redirect('/login')
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
   const { data: invoices } = await admin
     .from('invoices')
     .select('id, invoice_number, invoice_date, status, subtotal, vat_amount, total')

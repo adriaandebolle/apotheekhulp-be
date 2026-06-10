@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getEffectiveUserId } from "@/lib/effective-user-id";
 import ProfielAssistentClient from "./ProfielAssistentClient";
 
@@ -22,7 +21,7 @@ export default async function AssistentProfielPage() {
   if (!user) redirect("/login");
 
   const effectiveId = await getEffectiveUserId(user.id);
-  const admin = createAdminClient();
+  const admin = await createClient();
 
   const [{ data: userRow }, { data: profile }, { data: rawLinks }] =
     await Promise.all([

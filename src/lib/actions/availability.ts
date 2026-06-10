@@ -2,7 +2,6 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 
 export async function setMyAvailability(dayOfWeek: number, available: boolean) {
@@ -10,7 +9,7 @@ export async function setMyAvailability(dayOfWeek: number, available: boolean) {
   if (!user) return
 
   const effectiveId = await getEffectiveUserId(user.id)
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   if (available) {
     const { error } = await admin
@@ -39,7 +38,7 @@ export async function toggleAvailability(
   dayOfWeek: number,
   available: boolean,
 ) {
-  const admin = createAdminClient()
+  const admin = await createClient()
 
   if (available) {
     await admin

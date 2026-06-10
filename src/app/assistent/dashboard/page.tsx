@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getEffectiveUserId } from "@/lib/effective-user-id";
 import { calcHours } from "@/lib/pdf/pdf-utils";
 import { Badge } from "@/components/ui/Badge";
@@ -35,7 +34,7 @@ export default async function AssistentDashboardPage() {
   if (!user) redirect("/login");
 
   const effectiveId = await getEffectiveUserId(user.id);
-  const admin = createAdminClient();
+  const admin = await createClient();
   const now = new Date();
   const [y, mo] = [now.getFullYear(), now.getMonth() + 1];
   const monthStart = `${y}-${String(mo).padStart(2, "0")}-01`;

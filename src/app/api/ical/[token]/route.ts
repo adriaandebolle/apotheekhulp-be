@@ -1,9 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-
-function pad(n: number) {
-  return String(n).padStart(2, '0')
-}
+import { createClient } from '@/lib/supabase/client'
 
 function toIcalDate(date: string, time: string): string {
   // date: "YYYY-MM-DD", time: "HH:MM:SS" or "HH:MM"
@@ -31,45 +27,33 @@ export async function GET(
     return new Response('Niet gevonden.', { status: 404 })
   }
 
-  const admin = createAdminClient()
+  const supabase = createClient()
+  const { data: rows, error } = await supabase.rpc('get_ical_shifts', { p_token: token })
 
-  const { data: userRow } = await admin
-    .from('users')
-    .select('id, first_name, last_name')
-    .eq('ical_token', token)
-    .eq('role', 'assistent')
-    .maybeSingle()
+  // 0 rows = invalid token; error = something went wrong
+  if (error || !rows || rows.length === 0) {
+    return new Response('Niet gevonden.', { status: 404 })
+  }
 
-  if (!userRow) return new Response('Niet gevonden.', { status: 404 })
-
-  const { data: rawShifts } = await admin
-    .from('shifts')
-    .select(`
-      id, date, start_time, end_time, break_minutes, status,
-      location:locations(name, pharmacy:pharmacy_profiles(company_name))
-    `)
-    .eq('assistant_id', userRow.id)
-    .in('status', ['approved', 'pending_apotheek'])
-    .is('deleted_at', null)
-    .order('date', { ascending: true })
-
+  // >= 1 row = valid token; shift_id null = no qualifying shifts (LEFT JOIN sentinel)
+  const name = [rows[0].user_first, rows[0].user_last].filter(Boolean).join(' ') || 'Assistent'
+  type IcalRow = typeof rows[number]
+  const shifts = rows.filter((r: IcalRow) => r.shift_id !== null)
   const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
-  const name = [userRow.first_name, userRow.last_name].filter(Boolean).join(' ') || 'Assistent'
 
-  const events = (rawShifts ?? []).map(s => {
-    const loc     = s.location as unknown as { name: string; pharmacy: { company_name: string | null } | null } | null
-    const pharmacy = loc?.pharmacy?.company_name ?? 'Apotheek'
-    const location = loc?.name ?? ''
+  const events = shifts.map((s: IcalRow) => {
+    const pharmacy = s.company_name ?? 'Apotheek'
+    const location = s.location_name ?? ''
     const status   = STATUS_NL[s.status] ?? s.status
     const summary  = location ? `${pharmacy} – ${location}` : pharmacy
     const desc     = `Status: ${status}\\nPauze: ${s.break_minutes} min`
 
     return [
       'BEGIN:VEVENT',
-      `UID:${s.id}@apotheekhulp.be`,
+      `UID:${s.shift_id}@apotheekhulp.be`,
       `DTSTAMP:${now}`,
-      `DTSTART:${toIcalDate(s.date, s.start_time)}`,
-      `DTEND:${toIcalDate(s.date, s.end_time)}`,
+      `DTSTART:${toIcalDate(s.shift_date, s.start_time)}`,
+      `DTEND:${toIcalDate(s.shift_date, s.end_time)}`,
       `SUMMARY:${escapeText(summary)}`,
       `DESCRIPTION:${escapeText(desc)}`,
       'END:VEVENT',
