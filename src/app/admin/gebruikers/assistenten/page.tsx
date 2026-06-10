@@ -28,18 +28,16 @@ export default async function AssistentListPage({ searchParams }: Props) {
   const { q = '', sort = 'last_name', dir = 'asc' } = await searchParams
 
   const admin = await createClient()
-  const [{ data: { users: authUsers } }, { data: rows }] = await Promise.all([
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from('users').select('id, first_name, last_name, phone, is_active').eq('role', 'assistent'),
-  ])
-
-  const emailMap = new Map(authUsers.map(u => [u.id, u.email ?? '']))
+  const { data: rows } = await admin
+    .from('users')
+    .select('id, first_name, last_name, email, phone, is_active')
+    .eq('role', 'assistent')
 
   let assistants = (rows ?? []).map(u => ({
     id:         u.id,
     first_name: u.first_name ?? '',
     last_name:  u.last_name  ?? '',
-    email:      emailMap.get(u.id) ?? '',
+    email:      u.email      ?? '',
     phone:      u.phone      ?? '',
     is_active:  u.is_active  as boolean,
   }))

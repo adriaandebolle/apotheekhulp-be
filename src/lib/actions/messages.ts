@@ -15,14 +15,14 @@ export async function createMessage(data: {
 }): Promise<ActionResult<{ id: string }>> {
   if (!data.title?.trim() || !data.body?.trim()) return { error: 'Titel en inhoud zijn verplicht.' }
 
-  const admin = await createClient()
+  const supabase = await createClient()
 
   // Only one popup at a time — clear others first
   if (data.show_as_popup) {
-    await admin.from('messages').update({ show_as_popup: false }).eq('show_as_popup', true)
+    await supabase.from('messages').update({ show_as_popup: false }).eq('show_as_popup', true)
   }
 
-  const { data: row, error } = await admin
+  const { data: row, error } = await supabase
     .from('messages')
     .insert({
       title:              data.title.trim(),
@@ -35,22 +35,25 @@ export async function createMessage(data: {
     .single()
   if (error) return { error: error.message }
 
-  // Send notification emails in the background (don't block the response)
   if (data.notify_assistants || data.notify_pharmacies) {
-    const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 1000 })
+    const roles = [
+      ...(data.notify_assistants ? ['assistent'] : []),
+      ...(data.notify_pharmacies ? ['apotheek']  : []),
+    ]
+    const { data: userRows } = await supabase
+      .from('users')
+      .select('email, role')
+      .in('role', roles)
+      .eq('is_active', true)
+      .not('email', 'is', null)
 
     if (data.notify_assistants) {
-      const assistantEmails = users
-        .filter(u => u.app_metadata?.role === 'assistent' && u.email)
-        .map(u => u.email!)
-      await sendBerichtNotification(assistantEmails, data.title.trim(), data.body.trim(), 'assistent')
+      const emails = (userRows ?? []).filter(u => u.role === 'assistent' && u.email).map(u => u.email!)
+      await sendBerichtNotification(emails, data.title.trim(), data.body.trim(), 'assistent')
     }
-
     if (data.notify_pharmacies) {
-      const pharmacyEmails = users
-        .filter(u => u.app_metadata?.role === 'apotheek' && u.email)
-        .map(u => u.email!)
-      await sendBerichtNotification(pharmacyEmails, data.title.trim(), data.body.trim(), 'apotheek')
+      const emails = (userRows ?? []).filter(u => u.role === 'apotheek' && u.email).map(u => u.email!)
+      await sendBerichtNotification(emails, data.title.trim(), data.body.trim(), 'apotheek')
     }
   }
 
@@ -68,30 +71,38 @@ export async function updateMessage(
     notify_pharmacies?: boolean
   },
 ): Promise<ActionResult> {
-  const admin = await createClient()
+  const supabase = await createClient()
 
   if (data.show_as_popup) {
-    await admin.from('messages').update({ show_as_popup: false }).eq('show_as_popup', true).neq('id', id)
+    await supabase.from('messages').update({ show_as_popup: false }).eq('show_as_popup', true).neq('id', id)
   }
 
-  const { error } = await admin
+  const { error } = await supabase
     .from('messages')
     .update({ ...data, updated_at: new Date().toISOString() })
     .eq('id', id)
   if (error) return { error: error.message }
 
-  // Re-send notifications if checked
   if (data.notify_assistants || data.notify_pharmacies) {
     const title = data.title ?? ''
     const body  = data.body  ?? ''
-    const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 1000 })
+    const roles = [
+      ...(data.notify_assistants ? ['assistent'] : []),
+      ...(data.notify_pharmacies ? ['apotheek']  : []),
+    ]
+    const { data: userRows } = await supabase
+      .from('users')
+      .select('email, role')
+      .in('role', roles)
+      .eq('is_active', true)
+      .not('email', 'is', null)
 
     if (data.notify_assistants) {
-      const emails = users.filter(u => u.app_metadata?.role === 'assistent' && u.email).map(u => u.email!)
+      const emails = (userRows ?? []).filter(u => u.role === 'assistent' && u.email).map(u => u.email!)
       await sendBerichtNotification(emails, title, body, 'assistent')
     }
     if (data.notify_pharmacies) {
-      const emails = users.filter(u => u.app_metadata?.role === 'apotheek' && u.email).map(u => u.email!)
+      const emails = (userRows ?? []).filter(u => u.role === 'apotheek' && u.email).map(u => u.email!)
       await sendBerichtNotification(emails, title, body, 'apotheek')
     }
   }

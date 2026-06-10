@@ -28,19 +28,17 @@ export default async function ApotheekListPage({ searchParams }: Props) {
   const { q = '', sort = 'company_name', dir = 'asc' } = await searchParams
 
   const admin = await createClient()
-  const [{ data: { users: authUsers } }, { data: rows }, { data: profiles }] = await Promise.all([
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from('users').select('id, phone, is_active').eq('role', 'apotheek'),
+  const [{ data: rows }, { data: profiles }] = await Promise.all([
+    admin.from('users').select('id, email, phone, is_active').eq('role', 'apotheek'),
     admin.from('pharmacy_profiles').select('user_id, company_name'),
   ])
 
-  const emailMap   = new Map(authUsers.map(u => [u.id, u.email ?? '']))
   const profileMap = new Map((profiles ?? []).map(p => [p.user_id, p.company_name ?? '']))
 
   let apotheken = (rows ?? []).map(u => ({
     id:           u.id,
     company_name: profileMap.get(u.id) ?? '',
-    email:        emailMap.get(u.id)   ?? '',
+    email:        u.email              ?? '',
     phone:        u.phone              ?? '',
     is_active:    u.is_active          as boolean,
   }))

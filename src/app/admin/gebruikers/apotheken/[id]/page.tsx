@@ -9,28 +9,26 @@ export default async function ApotheekDetailPage({ params }: Props) {
   const admin = await createClient()
 
   const [
-    { data: authData, error: authError },
     { data: userRow },
     { data: profile },
     { data: locations },
   ] = await Promise.all([
-    admin.auth.admin.getUserById(id),
-    admin.from('users').select('id, phone, is_active').eq('id', id).single(),
+    admin.from('users').select('id, email, phone, is_active').eq('id', id).single(),
     admin.from('pharmacy_profiles').select('*').eq('user_id', id).maybeSingle(),
     admin.from('locations').select('id, name, address, is_active').eq('pharmacy_id', id).is('deleted_at', null).order('name'),
   ])
 
-  if (authError || !authData?.user || !userRow) notFound()
+  if (!userRow) notFound()
 
   return (
     <div className="p-8 max-w-5xl">
       <p className="text-xs text-text-muted mb-1">Gebruikers / Apotheken</p>
       <h1 className="text-2xl font-bold text-text mb-6">
-        {profile?.company_name ?? authData.user.email}
+        {profile?.company_name ?? userRow.email}
       </h1>
       <ApotheekDetail
         userId={id}
-        email={authData.user.email ?? ''}
+        email={userRow.email ?? ''}
         user={userRow}
         pharmacyProfile={profile ?? null}
         locations={locations ?? []}

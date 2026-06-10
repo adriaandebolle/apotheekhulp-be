@@ -7,7 +7,7 @@ import { Label, Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Table, Thead, Tbody, Th, Td, Tr, EmptyRow } from '@/components/ui/Table'
-import { updateUserProfile, adminChangePassword } from '@/lib/actions/users'
+import { updateUserProfile, adminSendPasswordReset } from '@/lib/actions/users'
 import { upsertAssistantProfile } from '@/lib/actions/assistant-profiles'
 import { createLink, updateLink, deleteLink } from '@/lib/actions/links'
 import { AddressAutocomplete } from '@/components/ui/AddressAutocomplete'
@@ -473,48 +473,27 @@ function VerbondenApothekenTab({
 
 // ─── Tab 4: Wachtwoord ────────────────────────────────────────────────────────
 
-function WachtwoordTab({ userId }: { userId: string }) {
+function WachtwoordTab({ email }: { email: string }) {
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ error?: string; success?: string }>({})
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    const password = fd.get('password') as string
-    const confirm  = fd.get('confirm')  as string
+  function handleClick() {
     setFeedback({})
-
-    if (password !== confirm) {
-      setFeedback({ error: 'Wachtwoorden komen niet overeen.' })
-      return
-    }
-
     startTransition(async () => {
-      const result = await adminChangePassword(userId, password)
+      const result = await adminSendPasswordReset(email)
       if ('error' in result) setFeedback({ error: result.error })
-      else {
-        setFeedback({ success: 'Wachtwoord gewijzigd.' })
-        ;(e.target as HTMLFormElement).reset()
-      }
+      else setFeedback({ success: 'Reset-e-mail verstuurd.' })
     })
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-      <div>
-        <Label htmlFor="password" required>Nieuw wachtwoord</Label>
-        <Input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" />
-      </div>
-
-      <div>
-        <Label htmlFor="confirm" required>Bevestig wachtwoord</Label>
-        <Input id="confirm" name="confirm" type="password" required minLength={8} autoComplete="new-password" />
-      </div>
-
+    <div className="max-w-lg space-y-4">
+      <p className="text-sm text-text-muted">
+        Stuur een wachtwoord-reset e-mail naar <strong>{email}</strong>.
+      </p>
       <Feedback {...feedback} />
-
-      <Button type="submit" loading={isPending}>Wachtwoord wijzigen</Button>
-    </form>
+      <Button onClick={handleClick} loading={isPending}>Reset-e-mail versturen</Button>
+    </div>
   )
 }
 
@@ -556,7 +535,7 @@ export function AssistentDetail({ userId, email, user, assistantProfile, links, 
             {activeKey === 'persoonsgegevens'   && <PersoonsgegevensTab userId={userId} email={email} user={user} />}
             {activeKey === 'bedrijfsgegevens'   && <BedrijfsgegevensTab userId={userId} profile={assistantProfile} />}
             {activeKey === 'verbonden_apotheken' && <VerbondenApothekenTab userId={userId} initialLinks={links} pharmacies={pharmacies} defaultKmRate={defaultKmRate} defaultHourlyRateAssistant={defaultHourlyRateAssistant} defaultHourlyRatePharmacy={defaultHourlyRatePharmacy} />}
-            {activeKey === 'wachtwoord'          && <WachtwoordTab userId={userId} />}
+            {activeKey === 'wachtwoord'          && <WachtwoordTab email={email} />}
           </>
         )}
       </Tabs>

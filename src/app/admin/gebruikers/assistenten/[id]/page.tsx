@@ -10,15 +10,13 @@ export default async function AssistentDetailPage({ params }: Props) {
   const admin = await createClient()
 
   const [
-    { data: { user: authUser }, error: authError },
     { data: userRow },
     { data: assistantProfile },
     { data: links },
     { data: pharmaciesRaw },
     config,
   ] = await Promise.all([
-    admin.auth.admin.getUserById(id),
-    admin.from('users').select('id, first_name, last_name, phone, color, is_active').eq('id', id).single(),
+    admin.from('users').select('id, first_name, last_name, email, phone, color, is_active').eq('id', id).single(),
     admin.from('assistant_profiles').select('vat_number, vat_liable, company_name, street, house_number, postcode, city, iban, invoice_prefix, invoice_next_number').eq('user_id', id).maybeSingle(),
     admin.from('links').select(`
       id,
@@ -34,7 +32,7 @@ export default async function AssistentDetailPage({ params }: Props) {
     getPlatformConfig(),
   ])
 
-  if (authError || !userRow) notFound()
+  if (!userRow) notFound()
 
   const pharmacies = (pharmaciesRaw ?? []).map(p => ({
     user_id:      p.user_id,
@@ -46,12 +44,12 @@ export default async function AssistentDetailPage({ params }: Props) {
     <div className="p-8">
       <p className="text-xs text-text-muted mb-1">Gebruikers / Assistenten</p>
       <h1 className="text-2xl font-bold text-text mb-6">
-        {[userRow.first_name, userRow.last_name].filter(Boolean).join(' ') || authUser!.email}
+        {[userRow.first_name, userRow.last_name].filter(Boolean).join(' ') || userRow.email}
       </h1>
 
       <AssistentDetail
         userId={id}
-        email={authUser!.email ?? ''}
+        email={userRow.email ?? ''}
         user={userRow}
         assistantProfile={assistantProfile}
         links={links ?? []}

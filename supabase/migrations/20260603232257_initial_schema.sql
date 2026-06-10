@@ -4,6 +4,7 @@
 create table public.users (
   id          uuid        primary key references auth.users(id) on delete cascade,
   role        text        not null check (role in ('admin', 'assistent', 'apotheek')),
+  email       text,
   first_name  text,
   last_name   text,
   phone       text,
@@ -19,10 +20,11 @@ create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer set search_path = ''
 as $$
 begin
-  insert into public.users (id, role)
+  insert into public.users (id, role, email)
   values (
     new.id,
-    coalesce(new.raw_app_meta_data->>'role', 'assistent')
+    coalesce(new.raw_app_meta_data->>'role', 'assistent'),
+    new.email
   );
   return new;
 end;
