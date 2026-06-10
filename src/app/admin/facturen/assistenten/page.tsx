@@ -76,12 +76,7 @@ export default async function FacturenAssistentPage({
       .order('last_name'),
     supabase.from('assistant_profiles')
       .select('user_id, vat_liable, invoice_prefix, invoice_next_number'),
-    supabase.from('shifts')
-      .select('date')
-      .eq('status', 'approved')
-      .is('deleted_at', null)
-      .order('date', { ascending: false })
-      .limit(2000),
+    supabase.rpc('get_shift_months'),
     supabase.from('locations')
       .select('id, pharmacy:pharmacy_profiles(company_name)')
       .is('deleted_at', null),
@@ -202,7 +197,7 @@ export default async function FacturenAssistentPage({
     }
   })
 
-  const months = [...new Set((monthDates ?? []).map(r => r.date.slice(0, 7)))].sort().reverse()
+  const months = (monthDates as { month: string }[] | null ?? []).map(r => r.month)
 
   return (
     <FacturenAssistentClient

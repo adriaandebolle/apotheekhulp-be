@@ -65,12 +65,7 @@ export default async function FacturenApotheekPage({
     supabase.from('locations')
       .select('id, pharmacy_id')
       .is('deleted_at', null),
-    supabase.from('shifts')
-      .select('date')
-      .eq('status', 'approved')
-      .is('deleted_at', null)
-      .order('date', { ascending: false })
-      .limit(2000),
+    supabase.rpc('get_shift_months'),
     supabase.from('invoices')
       .select('id, invoice_number, invoice_date, recipient_id, status, subtotal, vat_amount, total, shifts!apotheek_invoice_id(id)')
       .eq('type', 'apotheek')
@@ -199,7 +194,7 @@ export default async function FacturenApotheekPage({
     }
   })
 
-  const months = [...new Set((monthDates ?? []).map(r => r.date.slice(0, 7)))].sort().reverse()
+  const months = (monthDates as { month: string }[] | null ?? []).map(r => r.month)
 
   return (
     <FacturenApotheekClient
