@@ -100,10 +100,6 @@ Zie [.env.local.example](.env.local.example). Kopieer naar `.env.local` en vul d
 |-----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (public) |
-| `SUPABASE_SECRET_KEY` | Supabase secret key (server-only) |
-| `AWS_SES_REGION` | AWS regio voor e-mailversturing |
-| `AWS_ACCESS_KEY_ID` | AWS access key (fase 9) |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key (fase 9) |
 
 ---
 
