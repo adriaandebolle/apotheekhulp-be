@@ -39,14 +39,14 @@ create policy "user can read own row"
 
 create policy "admins can read all users"
   on public.users for select
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "user can update own row"
   on public.users for update using (id = auth.uid());
 
 create policy "admins can update any user"
   on public.users for update
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 
 -- ============================================================
@@ -74,18 +74,18 @@ create policy "assistant can read own profile"
 
 create policy "admins can read all assistant profiles"
   on public.assistant_profiles for select
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistant can update own profile"
   on public.assistant_profiles for update using (user_id = auth.uid());
 
 create policy "admins can update any assistant profile"
   on public.assistant_profiles for update
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "admins can insert assistant profiles"
   on public.assistant_profiles for insert
-  with check ((select role from public.users where id = auth.uid()) = 'admin');
+  with check (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 
 -- ============================================================
@@ -110,18 +110,18 @@ create policy "pharmacy can read own profile"
 
 create policy "admins can read all pharmacy profiles"
   on public.pharmacy_profiles for select
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "pharmacy can update own profile"
   on public.pharmacy_profiles for update using (user_id = auth.uid());
 
 create policy "admins can update any pharmacy profile"
   on public.pharmacy_profiles for update
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "admins can insert pharmacy profiles"
   on public.pharmacy_profiles for insert
-  with check ((select role from public.users where id = auth.uid()) = 'admin');
+  with check (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 
 -- ============================================================
@@ -141,7 +141,7 @@ alter table public.locations enable row level security;
 
 create policy "admins can manage locations"
   on public.locations for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "pharmacy can read own locations"
   on public.locations for select using (pharmacy_id = auth.uid() and deleted_at is null);
@@ -151,7 +151,7 @@ create policy "assistants can read active locations"
   using (
     is_active = true
     and deleted_at is null
-    and (select role from public.users where id = auth.uid()) = 'assistent'
+    and ((auth.jwt() -> 'app_metadata' ->> 'role')) = 'assistent'
   );
 
 
@@ -176,7 +176,7 @@ alter table public.links enable row level security;
 
 create policy "admins can manage links"
   on public.links for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistant can read own links"
   on public.links for select using (assistant_id = auth.uid() and deleted_at is null);
@@ -205,7 +205,7 @@ alter table public.shifts enable row level security;
 
 create policy "admins can manage all shifts"
   on public.shifts for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistant can read own shifts"
   on public.shifts for select using (assistant_id = auth.uid() and deleted_at is null);
@@ -242,15 +242,15 @@ alter table public.messages enable row level security;
 
 create policy "admins can manage messages"
   on public.messages for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistants can read messages"
   on public.messages for select
-  using ((select role from public.users where id = auth.uid()) = 'assistent');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'assistent');
 
 create policy "pharmacies can read messages"
   on public.messages for select
-  using ((select role from public.users where id = auth.uid()) = 'apotheek');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'apotheek');
 
 
 -- ============================================================
@@ -300,7 +300,7 @@ alter table public.platform_config enable row level security;
 
 create policy "admins can manage platform config"
   on public.platform_config for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "authenticated can read platform config"
   on public.platform_config for select
@@ -321,7 +321,7 @@ alter table public.assistant_availability enable row level security;
 
 create policy "admins can manage availability"
   on public.assistant_availability for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistants can manage own availability"
   on public.assistant_availability for all
@@ -355,7 +355,7 @@ alter table public.invoices enable row level security;
 
 create policy "admins can manage invoices"
   on public.invoices for all
-  using ((select role from public.users where id = auth.uid()) = 'admin');
+  using (((auth.jwt() -> 'app_metadata' ->> 'role')) = 'admin');
 
 create policy "assistent can read own invoices"
   on public.invoices for select
