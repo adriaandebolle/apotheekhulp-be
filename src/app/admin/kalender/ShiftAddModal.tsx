@@ -46,7 +46,7 @@ export default function ShiftAddModal({
               <option value="">— Kies assistent —</option>
               {assistants.map(a => (
                 <option key={a.id} value={a.id}>
-                  {[a.first_name, a.last_name].filter(Boolean).join(' ')}
+                  {[a.first_name, a.last_name].filter(Boolean).join(' ') || '—'}
                 </option>
               ))}
             </Select>
