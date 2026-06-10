@@ -62,7 +62,14 @@ export async function handleOtp(prev: OtpState, formData: FormData): Promise<Otp
       email,
       options: { shouldCreateUser: false },
     })
-    if (error) return { step: 'email', error: 'Dit e-mailadres is niet gekend in ons systeem.' }
+    if (error) {
+      const msg = error.message.toLowerCase()
+      if (msg.includes('not found') || msg.includes('user') || msg.includes('signup')) {
+        return { step: 'email', error: 'Dit e-mailadres is niet gekend in ons systeem.' }
+      }
+      // Surface unexpected errors (rate limit, provider disabled, etc.) to aid debugging
+      return { step: 'email', error: error.message }
+    }
     return { step: 'code', email }
   }
 
