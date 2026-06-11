@@ -1,11 +1,22 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@/lib/supabase/server'
 import { getEffectiveUserId } from '@/lib/effective-user-id'
 import { sendWelcomeEmail } from '@/lib/email'
 
 type ActionResult<T = void> = { error: string } | { data: T }
+
+// Throw-away client for admin-side user creation: no cookies in or out,
+// so signUp() neither inherits the admin's session nor overwrites it.
+function createSignupClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    { cookies: { getAll: () => [], setAll: () => {} } }
+  )
+}
 
 export async function createAssistant(formData: FormData): Promise<ActionResult<{ id: string }>> {
   const email      = (formData.get('email')      as string | null)?.trim()
@@ -17,11 +28,11 @@ export async function createAssistant(formData: FormData): Promise<ActionResult<
 
   const sendWelcome = formData.has('send_welcome_email')
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { role: 'assistent' } } })
+  const { data, error } = await createSignupClient().auth.signUp({ email, password, options: { data: { role: 'assistent' } } })
   if (error) return { error: error.message }
 
   const userId = data.user!.id
+  const supabase = await createClient()
 
   if (first_name || last_name) {
     const phone = (formData.get('phone') as string | null)?.trim() || null
@@ -58,11 +69,11 @@ export async function createPharmacy(formData: FormData): Promise<ActionResult<{
 
   const sendWelcome = formData.has('send_welcome_email')
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { role: 'apotheek' } } })
+  const { data, error } = await createSignupClient().auth.signUp({ email, password, options: { data: { role: 'apotheek' } } })
   if (error) return { error: error.message }
 
   const userId = data.user!.id
+  const supabase = await createClient()
 
   const phone = (formData.get('phone') as string | null)?.trim() || null
   if (phone) {

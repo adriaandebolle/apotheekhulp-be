@@ -3,8 +3,22 @@ import Script from 'next/script'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.apotheekhulp.be'),
   title: 'Apotheekhulp',
   description: 'Platform voor apotheekassistenten in België',
+  openGraph: {
+    title: 'Apotheekhulp',
+    description: 'Platform voor apotheekassistenten in België',
+    url: 'https://www.apotheekhulp.be',
+    siteName: 'Apotheekhulp',
+    locale: 'nl_BE',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Apotheekhulp',
+    description: 'Platform voor apotheekassistenten in België',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
